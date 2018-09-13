@@ -4,7 +4,7 @@ def grpc_deps():
     """Loads dependencies need to compile and test the grpc library."""
     native.bind(
         name = "libssl",
-        actual = "@boringssl//:ssl",
+        actual = "@openssl//:ssl",
     )
 
     native.bind(
@@ -67,11 +67,11 @@ def grpc_deps():
         actual = "@com_github_grpc_grpc//:grpc++_codegen_proto"
     )
 
-    if "boringssl" not in native.existing_rules():
+    if "openssl" not in native.existing_rules():
         native.http_archive(
-            name = "boringssl",
+            name = "openssl",
             # on the master-with-bazel branch
-            url = "https://boringssl.googlesource.com/boringssl/+archive/886e7d75368e3f4fab3f4d0d3584e4abfc557755.tar.gz",
+            url = "https://github.com/openssl/openssl/archive/OpenSSL_1_1_0h.tar.gz",
         )
 
     if "com_github_madler_zlib" not in native.existing_rules():

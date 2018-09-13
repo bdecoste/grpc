@@ -513,7 +513,7 @@ OPENSSL_LIBS = ssl crypto
 endif
 
 OPENSSL_ALPN_CHECK_CMD = $(CC) $(CPPFLAGS) $(CFLAGS) -o $(TMPOUT) test/build/openssl-alpn.c $(addprefix -l, $(OPENSSL_LIBS)) $(LDFLAGS)
-BORINGSSL_COMPILE_CHECK_CMD = $(CC) $(CPPFLAGS) -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI) -o $(TMPOUT) test/build/boringssl.c $(LDFLAGS)
+BORINGSSL_COMPILE_CHECK_CMD = $(CC) $(CPPFLAGS) -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI) -o $(TMPOUT) test/build/openssl.c $(LDFLAGS)
 ZLIB_CHECK_CMD = $(CC) $(CPPFLAGS) $(CFLAGS) -o $(TMPOUT) test/build/zlib.c -lz $(LDFLAGS)
 PROTOBUF_CHECK_CMD = $(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $(TMPOUT) test/build/protobuf.cc -lprotobuf $(LDFLAGS)
 CARES_CHECK_CMD = $(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $(TMPOUT) test/build/c-ares.c -lcares $(LDFLAGS)
@@ -596,7 +596,7 @@ endif
 # to emulate the fact we do not have OpenSSL in the third_party folder.
 ifneq ($(wildcard third_party/openssl-1.0.2f/libssl.a),)
 HAS_EMBEDDED_OPENSSL_ALPN = third_party/openssl-1.0.2f
-else ifeq ($(wildcard third_party/boringssl/include/openssl/ssl.h),)
+else ifeq ($(wildcard third_party/openssl/include/openssl/ssl.h),)
 HAS_EMBEDDED_OPENSSL_ALPN = false
 else
 CAN_COMPILE_EMBEDDED_OPENSSL ?= $(shell $(BORINGSSL_COMPILE_CHECK_CMD) 2> /dev/null && echo true || echo false)
@@ -711,11 +711,11 @@ OPENSSL_DEP :=
 OPENSSL_MERGE_LIBS :=
 ifeq ($(NO_SECURE),false)
 ifeq ($(EMBED_OPENSSL),true)
-OPENSSL_DEP += $(LIBDIR)/$(CONFIG)/libboringssl.a
-OPENSSL_MERGE_LIBS += $(LIBDIR)/$(CONFIG)/libboringssl.a
+OPENSSL_DEP += $(LIBDIR)/$(CONFIG)/libopenssl.a
+OPENSSL_MERGE_LIBS += $(LIBDIR)/$(CONFIG)/libopenssl.a
 OPENSSL_MERGE_OBJS += $(LIBBORINGSSL_OBJS)
 # need to prefix these to ensure overriding system libraries
-CPPFLAGS := -Ithird_party/boringssl/include $(CPPFLAGS)
+CPPFLAGS := -Ithird_party/openssl/include $(CPPFLAGS)
 else ifneq ($(EMBED_OPENSSL),false)
 OPENSSL_DEP += $(EMBED_OPENSSL)/libssl.a $(EMBED_OPENSSL)/libcrypto.a
 OPENSSL_MERGE_LIBS += $(EMBED_OPENSSL)/libssl.a $(EMBED_OPENSSL)/libcrypto.a
@@ -1208,56 +1208,56 @@ public_headers_must_be_c89: $(BINDIR)/$(CONFIG)/public_headers_must_be_c89
 gen_hpack_tables: $(BINDIR)/$(CONFIG)/gen_hpack_tables
 gen_legal_metadata_characters: $(BINDIR)/$(CONFIG)/gen_legal_metadata_characters
 gen_percent_encoding_tables: $(BINDIR)/$(CONFIG)/gen_percent_encoding_tables
-boringssl_crypto_test_data: $(BINDIR)/$(CONFIG)/boringssl_crypto_test_data
-boringssl_asn1_test: $(BINDIR)/$(CONFIG)/boringssl_asn1_test
-boringssl_base64_test: $(BINDIR)/$(CONFIG)/boringssl_base64_test
-boringssl_bio_test: $(BINDIR)/$(CONFIG)/boringssl_bio_test
-boringssl_buf_test: $(BINDIR)/$(CONFIG)/boringssl_buf_test
-boringssl_bytestring_test: $(BINDIR)/$(CONFIG)/boringssl_bytestring_test
-boringssl_chacha_test: $(BINDIR)/$(CONFIG)/boringssl_chacha_test
-boringssl_aead_test: $(BINDIR)/$(CONFIG)/boringssl_aead_test
-boringssl_cipher_test: $(BINDIR)/$(CONFIG)/boringssl_cipher_test
-boringssl_cmac_test: $(BINDIR)/$(CONFIG)/boringssl_cmac_test
-boringssl_compiler_test: $(BINDIR)/$(CONFIG)/boringssl_compiler_test
-boringssl_constant_time_test: $(BINDIR)/$(CONFIG)/boringssl_constant_time_test
-boringssl_ed25519_test: $(BINDIR)/$(CONFIG)/boringssl_ed25519_test
-boringssl_spake25519_test: $(BINDIR)/$(CONFIG)/boringssl_spake25519_test
-boringssl_x25519_test: $(BINDIR)/$(CONFIG)/boringssl_x25519_test
-boringssl_dh_test: $(BINDIR)/$(CONFIG)/boringssl_dh_test
-boringssl_digest_test: $(BINDIR)/$(CONFIG)/boringssl_digest_test
-boringssl_dsa_test: $(BINDIR)/$(CONFIG)/boringssl_dsa_test
-boringssl_ecdh_test: $(BINDIR)/$(CONFIG)/boringssl_ecdh_test
-boringssl_err_test: $(BINDIR)/$(CONFIG)/boringssl_err_test
-boringssl_evp_extra_test: $(BINDIR)/$(CONFIG)/boringssl_evp_extra_test
-boringssl_evp_test: $(BINDIR)/$(CONFIG)/boringssl_evp_test
-boringssl_pbkdf_test: $(BINDIR)/$(CONFIG)/boringssl_pbkdf_test
-boringssl_scrypt_test: $(BINDIR)/$(CONFIG)/boringssl_scrypt_test
-boringssl_aes_test: $(BINDIR)/$(CONFIG)/boringssl_aes_test
-boringssl_bn_test: $(BINDIR)/$(CONFIG)/boringssl_bn_test
-boringssl_ec_test: $(BINDIR)/$(CONFIG)/boringssl_ec_test
-boringssl_p256-x86_64_test: $(BINDIR)/$(CONFIG)/boringssl_p256-x86_64_test
-boringssl_ecdsa_test: $(BINDIR)/$(CONFIG)/boringssl_ecdsa_test
-boringssl_gcm_test: $(BINDIR)/$(CONFIG)/boringssl_gcm_test
-boringssl_ctrdrbg_test: $(BINDIR)/$(CONFIG)/boringssl_ctrdrbg_test
-boringssl_hkdf_test: $(BINDIR)/$(CONFIG)/boringssl_hkdf_test
-boringssl_hmac_test: $(BINDIR)/$(CONFIG)/boringssl_hmac_test
-boringssl_lhash_test: $(BINDIR)/$(CONFIG)/boringssl_lhash_test
-boringssl_obj_test: $(BINDIR)/$(CONFIG)/boringssl_obj_test
-boringssl_pkcs7_test: $(BINDIR)/$(CONFIG)/boringssl_pkcs7_test
-boringssl_pkcs12_test: $(BINDIR)/$(CONFIG)/boringssl_pkcs12_test
-boringssl_pkcs8_test: $(BINDIR)/$(CONFIG)/boringssl_pkcs8_test
-boringssl_poly1305_test: $(BINDIR)/$(CONFIG)/boringssl_poly1305_test
-boringssl_pool_test: $(BINDIR)/$(CONFIG)/boringssl_pool_test
-boringssl_refcount_test: $(BINDIR)/$(CONFIG)/boringssl_refcount_test
-boringssl_rsa_test: $(BINDIR)/$(CONFIG)/boringssl_rsa_test
-boringssl_file_test_gtest: $(BINDIR)/$(CONFIG)/boringssl_file_test_gtest
-boringssl_gtest_main: $(BINDIR)/$(CONFIG)/boringssl_gtest_main
-boringssl_thread_test: $(BINDIR)/$(CONFIG)/boringssl_thread_test
-boringssl_x509_test: $(BINDIR)/$(CONFIG)/boringssl_x509_test
-boringssl_tab_test: $(BINDIR)/$(CONFIG)/boringssl_tab_test
-boringssl_v3name_test: $(BINDIR)/$(CONFIG)/boringssl_v3name_test
-boringssl_span_test: $(BINDIR)/$(CONFIG)/boringssl_span_test
-boringssl_ssl_test: $(BINDIR)/$(CONFIG)/boringssl_ssl_test
+openssl_crypto_test_data: $(BINDIR)/$(CONFIG)/openssl_crypto_test_data
+openssl_asn1_test: $(BINDIR)/$(CONFIG)/openssl_asn1_test
+openssl_base64_test: $(BINDIR)/$(CONFIG)/openssl_base64_test
+openssl_bio_test: $(BINDIR)/$(CONFIG)/openssl_bio_test
+openssl_buf_test: $(BINDIR)/$(CONFIG)/openssl_buf_test
+openssl_bytestring_test: $(BINDIR)/$(CONFIG)/openssl_bytestring_test
+openssl_chacha_test: $(BINDIR)/$(CONFIG)/openssl_chacha_test
+openssl_aead_test: $(BINDIR)/$(CONFIG)/openssl_aead_test
+openssl_cipher_test: $(BINDIR)/$(CONFIG)/openssl_cipher_test
+openssl_cmac_test: $(BINDIR)/$(CONFIG)/openssl_cmac_test
+openssl_compiler_test: $(BINDIR)/$(CONFIG)/openssl_compiler_test
+openssl_constant_time_test: $(BINDIR)/$(CONFIG)/openssl_constant_time_test
+openssl_ed25519_test: $(BINDIR)/$(CONFIG)/openssl_ed25519_test
+openssl_spake25519_test: $(BINDIR)/$(CONFIG)/openssl_spake25519_test
+openssl_x25519_test: $(BINDIR)/$(CONFIG)/openssl_x25519_test
+openssl_dh_test: $(BINDIR)/$(CONFIG)/openssl_dh_test
+openssl_digest_test: $(BINDIR)/$(CONFIG)/openssl_digest_test
+openssl_dsa_test: $(BINDIR)/$(CONFIG)/openssl_dsa_test
+openssl_ecdh_test: $(BINDIR)/$(CONFIG)/openssl_ecdh_test
+openssl_err_test: $(BINDIR)/$(CONFIG)/openssl_err_test
+openssl_evp_extra_test: $(BINDIR)/$(CONFIG)/openssl_evp_extra_test
+openssl_evp_test: $(BINDIR)/$(CONFIG)/openssl_evp_test
+openssl_pbkdf_test: $(BINDIR)/$(CONFIG)/openssl_pbkdf_test
+openssl_scrypt_test: $(BINDIR)/$(CONFIG)/openssl_scrypt_test
+openssl_aes_test: $(BINDIR)/$(CONFIG)/openssl_aes_test
+openssl_bn_test: $(BINDIR)/$(CONFIG)/openssl_bn_test
+openssl_ec_test: $(BINDIR)/$(CONFIG)/openssl_ec_test
+openssl_p256-x86_64_test: $(BINDIR)/$(CONFIG)/openssl_p256-x86_64_test
+openssl_ecdsa_test: $(BINDIR)/$(CONFIG)/openssl_ecdsa_test
+openssl_gcm_test: $(BINDIR)/$(CONFIG)/openssl_gcm_test
+openssl_ctrdrbg_test: $(BINDIR)/$(CONFIG)/openssl_ctrdrbg_test
+openssl_hkdf_test: $(BINDIR)/$(CONFIG)/openssl_hkdf_test
+openssl_hmac_test: $(BINDIR)/$(CONFIG)/openssl_hmac_test
+openssl_lhash_test: $(BINDIR)/$(CONFIG)/openssl_lhash_test
+openssl_obj_test: $(BINDIR)/$(CONFIG)/openssl_obj_test
+openssl_pkcs7_test: $(BINDIR)/$(CONFIG)/openssl_pkcs7_test
+openssl_pkcs12_test: $(BINDIR)/$(CONFIG)/openssl_pkcs12_test
+openssl_pkcs8_test: $(BINDIR)/$(CONFIG)/openssl_pkcs8_test
+openssl_poly1305_test: $(BINDIR)/$(CONFIG)/openssl_poly1305_test
+openssl_pool_test: $(BINDIR)/$(CONFIG)/openssl_pool_test
+openssl_refcount_test: $(BINDIR)/$(CONFIG)/openssl_refcount_test
+openssl_rsa_test: $(BINDIR)/$(CONFIG)/openssl_rsa_test
+openssl_file_test_gtest: $(BINDIR)/$(CONFIG)/openssl_file_test_gtest
+openssl_gtest_main: $(BINDIR)/$(CONFIG)/openssl_gtest_main
+openssl_thread_test: $(BINDIR)/$(CONFIG)/openssl_thread_test
+openssl_x509_test: $(BINDIR)/$(CONFIG)/openssl_x509_test
+openssl_tab_test: $(BINDIR)/$(CONFIG)/openssl_tab_test
+openssl_v3name_test: $(BINDIR)/$(CONFIG)/openssl_v3name_test
+openssl_span_test: $(BINDIR)/$(CONFIG)/openssl_span_test
+openssl_ssl_test: $(BINDIR)/$(CONFIG)/openssl_ssl_test
 badreq_bad_client_test: $(BINDIR)/$(CONFIG)/badreq_bad_client_test
 connection_prefix_bad_client_test: $(BINDIR)/$(CONFIG)/connection_prefix_bad_client_test
 duplicate_header_bad_client_test: $(BINDIR)/$(CONFIG)/duplicate_header_bad_client_test
@@ -1376,7 +1376,7 @@ pc_cxx: $(LIBDIR)/$(CONFIG)/pkgconfig/grpc++.pc
 pc_cxx_unsecure: $(LIBDIR)/$(CONFIG)/pkgconfig/grpc++_unsecure.pc
 
 ifeq ($(EMBED_OPENSSL),true)
-privatelibs_cxx:  $(LIBDIR)/$(CONFIG)/libgrpc++_core_stats.a $(LIBDIR)/$(CONFIG)/libgrpc++_proto_reflection_desc_db.a $(LIBDIR)/$(CONFIG)/libgrpc++_test_config.a $(LIBDIR)/$(CONFIG)/libgrpc++_test_util.a $(LIBDIR)/$(CONFIG)/libgrpc++_test_util_unsecure.a $(LIBDIR)/$(CONFIG)/libgrpc_cli_libs.a $(LIBDIR)/$(CONFIG)/libhttp2_client_main.a $(LIBDIR)/$(CONFIG)/libinterop_client_helper.a $(LIBDIR)/$(CONFIG)/libinterop_client_main.a $(LIBDIR)/$(CONFIG)/libinterop_server_helper.a $(LIBDIR)/$(CONFIG)/libinterop_server_lib.a $(LIBDIR)/$(CONFIG)/libinterop_server_main.a $(LIBDIR)/$(CONFIG)/liblb_load_data_store.a $(LIBDIR)/$(CONFIG)/libqps.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl_crypto_test_data_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_asn1_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_base64_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_bio_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_buf_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_bytestring_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_chacha_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_aead_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_cipher_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_cmac_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_compiler_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_constant_time_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_ed25519_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_spake25519_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_x25519_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_dh_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_digest_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_dsa_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_ecdh_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_err_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_evp_extra_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_evp_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_pbkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_scrypt_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_aes_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_bn_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_ec_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_p256-x86_64_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_ecdsa_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_gcm_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_ctrdrbg_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_hkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_hmac_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_lhash_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_obj_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_pkcs7_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_pkcs12_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_pkcs8_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_poly1305_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_pool_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_refcount_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_rsa_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_file_test_gtest_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_gtest_main_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_thread_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_x509_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_tab_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_v3name_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_span_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_ssl_test_lib.a $(LIBDIR)/$(CONFIG)/libbenchmark.a
+privatelibs_cxx:  $(LIBDIR)/$(CONFIG)/libgrpc++_core_stats.a $(LIBDIR)/$(CONFIG)/libgrpc++_proto_reflection_desc_db.a $(LIBDIR)/$(CONFIG)/libgrpc++_test_config.a $(LIBDIR)/$(CONFIG)/libgrpc++_test_util.a $(LIBDIR)/$(CONFIG)/libgrpc++_test_util_unsecure.a $(LIBDIR)/$(CONFIG)/libgrpc_cli_libs.a $(LIBDIR)/$(CONFIG)/libhttp2_client_main.a $(LIBDIR)/$(CONFIG)/libinterop_client_helper.a $(LIBDIR)/$(CONFIG)/libinterop_client_main.a $(LIBDIR)/$(CONFIG)/libinterop_server_helper.a $(LIBDIR)/$(CONFIG)/libinterop_server_lib.a $(LIBDIR)/$(CONFIG)/libinterop_server_main.a $(LIBDIR)/$(CONFIG)/liblb_load_data_store.a $(LIBDIR)/$(CONFIG)/libqps.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl_crypto_test_data_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_asn1_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_base64_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_bio_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_buf_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_bytestring_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_chacha_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_aead_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_cipher_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_cmac_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_compiler_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_constant_time_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_ed25519_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_spake25519_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_x25519_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_dh_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_digest_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_dsa_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_ecdh_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_err_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_evp_extra_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_evp_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_pbkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_scrypt_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_aes_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_bn_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_ec_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_p256-x86_64_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_ecdsa_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_gcm_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_ctrdrbg_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_hkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_hmac_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_lhash_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_obj_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_pkcs7_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_pkcs12_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_pkcs8_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_poly1305_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_pool_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_refcount_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_rsa_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_file_test_gtest_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_gtest_main_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_thread_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_x509_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_tab_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_v3name_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_span_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_ssl_test_lib.a $(LIBDIR)/$(CONFIG)/libbenchmark.a
 else
 privatelibs_cxx:  $(LIBDIR)/$(CONFIG)/libgrpc++_core_stats.a $(LIBDIR)/$(CONFIG)/libgrpc++_proto_reflection_desc_db.a $(LIBDIR)/$(CONFIG)/libgrpc++_test_config.a $(LIBDIR)/$(CONFIG)/libgrpc++_test_util.a $(LIBDIR)/$(CONFIG)/libgrpc++_test_util_unsecure.a $(LIBDIR)/$(CONFIG)/libgrpc_cli_libs.a $(LIBDIR)/$(CONFIG)/libhttp2_client_main.a $(LIBDIR)/$(CONFIG)/libinterop_client_helper.a $(LIBDIR)/$(CONFIG)/libinterop_client_main.a $(LIBDIR)/$(CONFIG)/libinterop_server_helper.a $(LIBDIR)/$(CONFIG)/libinterop_server_lib.a $(LIBDIR)/$(CONFIG)/libinterop_server_main.a $(LIBDIR)/$(CONFIG)/liblb_load_data_store.a $(LIBDIR)/$(CONFIG)/libqps.a $(LIBDIR)/$(CONFIG)/libbenchmark.a
 endif
@@ -1686,56 +1686,56 @@ buildtests_cxx: privatelibs_cxx \
   $(BINDIR)/$(CONFIG)/transport_pid_controller_test \
   $(BINDIR)/$(CONFIG)/transport_security_common_api_test \
   $(BINDIR)/$(CONFIG)/writes_per_rpc_test \
-  $(BINDIR)/$(CONFIG)/boringssl_crypto_test_data \
-  $(BINDIR)/$(CONFIG)/boringssl_asn1_test \
-  $(BINDIR)/$(CONFIG)/boringssl_base64_test \
-  $(BINDIR)/$(CONFIG)/boringssl_bio_test \
-  $(BINDIR)/$(CONFIG)/boringssl_buf_test \
-  $(BINDIR)/$(CONFIG)/boringssl_bytestring_test \
-  $(BINDIR)/$(CONFIG)/boringssl_chacha_test \
-  $(BINDIR)/$(CONFIG)/boringssl_aead_test \
-  $(BINDIR)/$(CONFIG)/boringssl_cipher_test \
-  $(BINDIR)/$(CONFIG)/boringssl_cmac_test \
-  $(BINDIR)/$(CONFIG)/boringssl_compiler_test \
-  $(BINDIR)/$(CONFIG)/boringssl_constant_time_test \
-  $(BINDIR)/$(CONFIG)/boringssl_ed25519_test \
-  $(BINDIR)/$(CONFIG)/boringssl_spake25519_test \
-  $(BINDIR)/$(CONFIG)/boringssl_x25519_test \
-  $(BINDIR)/$(CONFIG)/boringssl_dh_test \
-  $(BINDIR)/$(CONFIG)/boringssl_digest_test \
-  $(BINDIR)/$(CONFIG)/boringssl_dsa_test \
-  $(BINDIR)/$(CONFIG)/boringssl_ecdh_test \
-  $(BINDIR)/$(CONFIG)/boringssl_err_test \
-  $(BINDIR)/$(CONFIG)/boringssl_evp_extra_test \
-  $(BINDIR)/$(CONFIG)/boringssl_evp_test \
-  $(BINDIR)/$(CONFIG)/boringssl_pbkdf_test \
-  $(BINDIR)/$(CONFIG)/boringssl_scrypt_test \
-  $(BINDIR)/$(CONFIG)/boringssl_aes_test \
-  $(BINDIR)/$(CONFIG)/boringssl_bn_test \
-  $(BINDIR)/$(CONFIG)/boringssl_ec_test \
-  $(BINDIR)/$(CONFIG)/boringssl_p256-x86_64_test \
-  $(BINDIR)/$(CONFIG)/boringssl_ecdsa_test \
-  $(BINDIR)/$(CONFIG)/boringssl_gcm_test \
-  $(BINDIR)/$(CONFIG)/boringssl_ctrdrbg_test \
-  $(BINDIR)/$(CONFIG)/boringssl_hkdf_test \
-  $(BINDIR)/$(CONFIG)/boringssl_hmac_test \
-  $(BINDIR)/$(CONFIG)/boringssl_lhash_test \
-  $(BINDIR)/$(CONFIG)/boringssl_obj_test \
-  $(BINDIR)/$(CONFIG)/boringssl_pkcs7_test \
-  $(BINDIR)/$(CONFIG)/boringssl_pkcs12_test \
-  $(BINDIR)/$(CONFIG)/boringssl_pkcs8_test \
-  $(BINDIR)/$(CONFIG)/boringssl_poly1305_test \
-  $(BINDIR)/$(CONFIG)/boringssl_pool_test \
-  $(BINDIR)/$(CONFIG)/boringssl_refcount_test \
-  $(BINDIR)/$(CONFIG)/boringssl_rsa_test \
-  $(BINDIR)/$(CONFIG)/boringssl_file_test_gtest \
-  $(BINDIR)/$(CONFIG)/boringssl_gtest_main \
-  $(BINDIR)/$(CONFIG)/boringssl_thread_test \
-  $(BINDIR)/$(CONFIG)/boringssl_x509_test \
-  $(BINDIR)/$(CONFIG)/boringssl_tab_test \
-  $(BINDIR)/$(CONFIG)/boringssl_v3name_test \
-  $(BINDIR)/$(CONFIG)/boringssl_span_test \
-  $(BINDIR)/$(CONFIG)/boringssl_ssl_test \
+  $(BINDIR)/$(CONFIG)/openssl_crypto_test_data \
+  $(BINDIR)/$(CONFIG)/openssl_asn1_test \
+  $(BINDIR)/$(CONFIG)/openssl_base64_test \
+  $(BINDIR)/$(CONFIG)/openssl_bio_test \
+  $(BINDIR)/$(CONFIG)/openssl_buf_test \
+  $(BINDIR)/$(CONFIG)/openssl_bytestring_test \
+  $(BINDIR)/$(CONFIG)/openssl_chacha_test \
+  $(BINDIR)/$(CONFIG)/openssl_aead_test \
+  $(BINDIR)/$(CONFIG)/openssl_cipher_test \
+  $(BINDIR)/$(CONFIG)/openssl_cmac_test \
+  $(BINDIR)/$(CONFIG)/openssl_compiler_test \
+  $(BINDIR)/$(CONFIG)/openssl_constant_time_test \
+  $(BINDIR)/$(CONFIG)/openssl_ed25519_test \
+  $(BINDIR)/$(CONFIG)/openssl_spake25519_test \
+  $(BINDIR)/$(CONFIG)/openssl_x25519_test \
+  $(BINDIR)/$(CONFIG)/openssl_dh_test \
+  $(BINDIR)/$(CONFIG)/openssl_digest_test \
+  $(BINDIR)/$(CONFIG)/openssl_dsa_test \
+  $(BINDIR)/$(CONFIG)/openssl_ecdh_test \
+  $(BINDIR)/$(CONFIG)/openssl_err_test \
+  $(BINDIR)/$(CONFIG)/openssl_evp_extra_test \
+  $(BINDIR)/$(CONFIG)/openssl_evp_test \
+  $(BINDIR)/$(CONFIG)/openssl_pbkdf_test \
+  $(BINDIR)/$(CONFIG)/openssl_scrypt_test \
+  $(BINDIR)/$(CONFIG)/openssl_aes_test \
+  $(BINDIR)/$(CONFIG)/openssl_bn_test \
+  $(BINDIR)/$(CONFIG)/openssl_ec_test \
+  $(BINDIR)/$(CONFIG)/openssl_p256-x86_64_test \
+  $(BINDIR)/$(CONFIG)/openssl_ecdsa_test \
+  $(BINDIR)/$(CONFIG)/openssl_gcm_test \
+  $(BINDIR)/$(CONFIG)/openssl_ctrdrbg_test \
+  $(BINDIR)/$(CONFIG)/openssl_hkdf_test \
+  $(BINDIR)/$(CONFIG)/openssl_hmac_test \
+  $(BINDIR)/$(CONFIG)/openssl_lhash_test \
+  $(BINDIR)/$(CONFIG)/openssl_obj_test \
+  $(BINDIR)/$(CONFIG)/openssl_pkcs7_test \
+  $(BINDIR)/$(CONFIG)/openssl_pkcs12_test \
+  $(BINDIR)/$(CONFIG)/openssl_pkcs8_test \
+  $(BINDIR)/$(CONFIG)/openssl_poly1305_test \
+  $(BINDIR)/$(CONFIG)/openssl_pool_test \
+  $(BINDIR)/$(CONFIG)/openssl_refcount_test \
+  $(BINDIR)/$(CONFIG)/openssl_rsa_test \
+  $(BINDIR)/$(CONFIG)/openssl_file_test_gtest \
+  $(BINDIR)/$(CONFIG)/openssl_gtest_main \
+  $(BINDIR)/$(CONFIG)/openssl_thread_test \
+  $(BINDIR)/$(CONFIG)/openssl_x509_test \
+  $(BINDIR)/$(CONFIG)/openssl_tab_test \
+  $(BINDIR)/$(CONFIG)/openssl_v3name_test \
+  $(BINDIR)/$(CONFIG)/openssl_span_test \
+  $(BINDIR)/$(CONFIG)/openssl_ssl_test \
   $(BINDIR)/$(CONFIG)/resolver_component_test_unsecure \
   $(BINDIR)/$(CONFIG)/resolver_component_test \
   $(BINDIR)/$(CONFIG)/resolver_component_tests_runner_invoker_unsecure \
@@ -3546,7 +3546,7 @@ LIBGRPC_SRC = \
     src/core/ext/filters/deadline/deadline_filter.cc \
     src/core/tsi/alts_transport_security.cc \
     src/core/tsi/fake_transport_security.cc \
-    src/core/tsi/ssl/session_cache/ssl_session_boringssl.cc \
+    src/core/tsi/ssl/session_cache/ssl_session_openssl.cc \
     src/core/tsi/ssl/session_cache/ssl_session_cache.cc \
     src/core/tsi/ssl/session_cache/ssl_session_openssl.cc \
     src/core/tsi/ssl_transport_security.cc \
@@ -3943,7 +3943,7 @@ LIBGRPC_CRONET_SRC = \
     src/core/ext/transport/chttp2/client/chttp2_connector.cc \
     src/core/tsi/alts_transport_security.cc \
     src/core/tsi/fake_transport_security.cc \
-    src/core/tsi/ssl/session_cache/ssl_session_boringssl.cc \
+    src/core/tsi/ssl/session_cache/ssl_session_openssl.cc \
     src/core/tsi/ssl/session_cache/ssl_session_cache.cc \
     src/core/tsi/ssl/session_cache/ssl_session_openssl.cc \
     src/core/tsi/ssl_transport_security.cc \
@@ -7377,277 +7377,277 @@ endif
 
 
 LIBBORINGSSL_SRC = \
-    src/boringssl/err_data.c \
-    third_party/boringssl/crypto/asn1/a_bitstr.c \
-    third_party/boringssl/crypto/asn1/a_bool.c \
-    third_party/boringssl/crypto/asn1/a_d2i_fp.c \
-    third_party/boringssl/crypto/asn1/a_dup.c \
-    third_party/boringssl/crypto/asn1/a_enum.c \
-    third_party/boringssl/crypto/asn1/a_gentm.c \
-    third_party/boringssl/crypto/asn1/a_i2d_fp.c \
-    third_party/boringssl/crypto/asn1/a_int.c \
-    third_party/boringssl/crypto/asn1/a_mbstr.c \
-    third_party/boringssl/crypto/asn1/a_object.c \
-    third_party/boringssl/crypto/asn1/a_octet.c \
-    third_party/boringssl/crypto/asn1/a_print.c \
-    third_party/boringssl/crypto/asn1/a_strnid.c \
-    third_party/boringssl/crypto/asn1/a_time.c \
-    third_party/boringssl/crypto/asn1/a_type.c \
-    third_party/boringssl/crypto/asn1/a_utctm.c \
-    third_party/boringssl/crypto/asn1/a_utf8.c \
-    third_party/boringssl/crypto/asn1/asn1_lib.c \
-    third_party/boringssl/crypto/asn1/asn1_par.c \
-    third_party/boringssl/crypto/asn1/asn_pack.c \
-    third_party/boringssl/crypto/asn1/f_enum.c \
-    third_party/boringssl/crypto/asn1/f_int.c \
-    third_party/boringssl/crypto/asn1/f_string.c \
-    third_party/boringssl/crypto/asn1/tasn_dec.c \
-    third_party/boringssl/crypto/asn1/tasn_enc.c \
-    third_party/boringssl/crypto/asn1/tasn_fre.c \
-    third_party/boringssl/crypto/asn1/tasn_new.c \
-    third_party/boringssl/crypto/asn1/tasn_typ.c \
-    third_party/boringssl/crypto/asn1/tasn_utl.c \
-    third_party/boringssl/crypto/asn1/time_support.c \
-    third_party/boringssl/crypto/base64/base64.c \
-    third_party/boringssl/crypto/bio/bio.c \
-    third_party/boringssl/crypto/bio/bio_mem.c \
-    third_party/boringssl/crypto/bio/connect.c \
-    third_party/boringssl/crypto/bio/fd.c \
-    third_party/boringssl/crypto/bio/file.c \
-    third_party/boringssl/crypto/bio/hexdump.c \
-    third_party/boringssl/crypto/bio/pair.c \
-    third_party/boringssl/crypto/bio/printf.c \
-    third_party/boringssl/crypto/bio/socket.c \
-    third_party/boringssl/crypto/bio/socket_helper.c \
-    third_party/boringssl/crypto/bn_extra/bn_asn1.c \
-    third_party/boringssl/crypto/bn_extra/convert.c \
-    third_party/boringssl/crypto/buf/buf.c \
-    third_party/boringssl/crypto/bytestring/asn1_compat.c \
-    third_party/boringssl/crypto/bytestring/ber.c \
-    third_party/boringssl/crypto/bytestring/cbb.c \
-    third_party/boringssl/crypto/bytestring/cbs.c \
-    third_party/boringssl/crypto/chacha/chacha.c \
-    third_party/boringssl/crypto/cipher_extra/cipher_extra.c \
-    third_party/boringssl/crypto/cipher_extra/derive_key.c \
-    third_party/boringssl/crypto/cipher_extra/e_aesctrhmac.c \
-    third_party/boringssl/crypto/cipher_extra/e_aesgcmsiv.c \
-    third_party/boringssl/crypto/cipher_extra/e_chacha20poly1305.c \
-    third_party/boringssl/crypto/cipher_extra/e_null.c \
-    third_party/boringssl/crypto/cipher_extra/e_rc2.c \
-    third_party/boringssl/crypto/cipher_extra/e_rc4.c \
-    third_party/boringssl/crypto/cipher_extra/e_ssl3.c \
-    third_party/boringssl/crypto/cipher_extra/e_tls.c \
-    third_party/boringssl/crypto/cipher_extra/tls_cbc.c \
-    third_party/boringssl/crypto/cmac/cmac.c \
-    third_party/boringssl/crypto/conf/conf.c \
-    third_party/boringssl/crypto/cpu-aarch64-linux.c \
-    third_party/boringssl/crypto/cpu-arm-linux.c \
-    third_party/boringssl/crypto/cpu-arm.c \
-    third_party/boringssl/crypto/cpu-intel.c \
-    third_party/boringssl/crypto/cpu-ppc64le.c \
-    third_party/boringssl/crypto/crypto.c \
-    third_party/boringssl/crypto/curve25519/spake25519.c \
-    third_party/boringssl/crypto/curve25519/x25519-x86_64.c \
-    third_party/boringssl/crypto/dh/check.c \
-    third_party/boringssl/crypto/dh/dh.c \
-    third_party/boringssl/crypto/dh/dh_asn1.c \
-    third_party/boringssl/crypto/dh/params.c \
-    third_party/boringssl/crypto/digest_extra/digest_extra.c \
-    third_party/boringssl/crypto/dsa/dsa.c \
-    third_party/boringssl/crypto/dsa/dsa_asn1.c \
-    third_party/boringssl/crypto/ec_extra/ec_asn1.c \
-    third_party/boringssl/crypto/ecdh/ecdh.c \
-    third_party/boringssl/crypto/ecdsa_extra/ecdsa_asn1.c \
-    third_party/boringssl/crypto/engine/engine.c \
-    third_party/boringssl/crypto/err/err.c \
-    third_party/boringssl/crypto/evp/digestsign.c \
-    third_party/boringssl/crypto/evp/evp.c \
-    third_party/boringssl/crypto/evp/evp_asn1.c \
-    third_party/boringssl/crypto/evp/evp_ctx.c \
-    third_party/boringssl/crypto/evp/p_dsa_asn1.c \
-    third_party/boringssl/crypto/evp/p_ec.c \
-    third_party/boringssl/crypto/evp/p_ec_asn1.c \
-    third_party/boringssl/crypto/evp/p_ed25519.c \
-    third_party/boringssl/crypto/evp/p_ed25519_asn1.c \
-    third_party/boringssl/crypto/evp/p_rsa.c \
-    third_party/boringssl/crypto/evp/p_rsa_asn1.c \
-    third_party/boringssl/crypto/evp/pbkdf.c \
-    third_party/boringssl/crypto/evp/print.c \
-    third_party/boringssl/crypto/evp/scrypt.c \
-    third_party/boringssl/crypto/evp/sign.c \
-    third_party/boringssl/crypto/ex_data.c \
-    third_party/boringssl/crypto/fipsmodule/bcm.c \
-    third_party/boringssl/crypto/fipsmodule/is_fips.c \
-    third_party/boringssl/crypto/hkdf/hkdf.c \
-    third_party/boringssl/crypto/lhash/lhash.c \
-    third_party/boringssl/crypto/mem.c \
-    third_party/boringssl/crypto/obj/obj.c \
-    third_party/boringssl/crypto/obj/obj_xref.c \
-    third_party/boringssl/crypto/pem/pem_all.c \
-    third_party/boringssl/crypto/pem/pem_info.c \
-    third_party/boringssl/crypto/pem/pem_lib.c \
-    third_party/boringssl/crypto/pem/pem_oth.c \
-    third_party/boringssl/crypto/pem/pem_pk8.c \
-    third_party/boringssl/crypto/pem/pem_pkey.c \
-    third_party/boringssl/crypto/pem/pem_x509.c \
-    third_party/boringssl/crypto/pem/pem_xaux.c \
-    third_party/boringssl/crypto/pkcs7/pkcs7.c \
-    third_party/boringssl/crypto/pkcs7/pkcs7_x509.c \
-    third_party/boringssl/crypto/pkcs8/p5_pbev2.c \
-    third_party/boringssl/crypto/pkcs8/pkcs8.c \
-    third_party/boringssl/crypto/pkcs8/pkcs8_x509.c \
-    third_party/boringssl/crypto/poly1305/poly1305.c \
-    third_party/boringssl/crypto/poly1305/poly1305_arm.c \
-    third_party/boringssl/crypto/poly1305/poly1305_vec.c \
-    third_party/boringssl/crypto/pool/pool.c \
-    third_party/boringssl/crypto/rand_extra/deterministic.c \
-    third_party/boringssl/crypto/rand_extra/forkunsafe.c \
-    third_party/boringssl/crypto/rand_extra/fuchsia.c \
-    third_party/boringssl/crypto/rand_extra/rand_extra.c \
-    third_party/boringssl/crypto/rand_extra/windows.c \
-    third_party/boringssl/crypto/rc4/rc4.c \
-    third_party/boringssl/crypto/refcount_c11.c \
-    third_party/boringssl/crypto/refcount_lock.c \
-    third_party/boringssl/crypto/rsa_extra/rsa_asn1.c \
-    third_party/boringssl/crypto/stack/stack.c \
-    third_party/boringssl/crypto/thread.c \
-    third_party/boringssl/crypto/thread_none.c \
-    third_party/boringssl/crypto/thread_pthread.c \
-    third_party/boringssl/crypto/thread_win.c \
-    third_party/boringssl/crypto/x509/a_digest.c \
-    third_party/boringssl/crypto/x509/a_sign.c \
-    third_party/boringssl/crypto/x509/a_strex.c \
-    third_party/boringssl/crypto/x509/a_verify.c \
-    third_party/boringssl/crypto/x509/algorithm.c \
-    third_party/boringssl/crypto/x509/asn1_gen.c \
-    third_party/boringssl/crypto/x509/by_dir.c \
-    third_party/boringssl/crypto/x509/by_file.c \
-    third_party/boringssl/crypto/x509/i2d_pr.c \
-    third_party/boringssl/crypto/x509/rsa_pss.c \
-    third_party/boringssl/crypto/x509/t_crl.c \
-    third_party/boringssl/crypto/x509/t_req.c \
-    third_party/boringssl/crypto/x509/t_x509.c \
-    third_party/boringssl/crypto/x509/t_x509a.c \
-    third_party/boringssl/crypto/x509/x509.c \
-    third_party/boringssl/crypto/x509/x509_att.c \
-    third_party/boringssl/crypto/x509/x509_cmp.c \
-    third_party/boringssl/crypto/x509/x509_d2.c \
-    third_party/boringssl/crypto/x509/x509_def.c \
-    third_party/boringssl/crypto/x509/x509_ext.c \
-    third_party/boringssl/crypto/x509/x509_lu.c \
-    third_party/boringssl/crypto/x509/x509_obj.c \
-    third_party/boringssl/crypto/x509/x509_r2x.c \
-    third_party/boringssl/crypto/x509/x509_req.c \
-    third_party/boringssl/crypto/x509/x509_set.c \
-    third_party/boringssl/crypto/x509/x509_trs.c \
-    third_party/boringssl/crypto/x509/x509_txt.c \
-    third_party/boringssl/crypto/x509/x509_v3.c \
-    third_party/boringssl/crypto/x509/x509_vfy.c \
-    third_party/boringssl/crypto/x509/x509_vpm.c \
-    third_party/boringssl/crypto/x509/x509cset.c \
-    third_party/boringssl/crypto/x509/x509name.c \
-    third_party/boringssl/crypto/x509/x509rset.c \
-    third_party/boringssl/crypto/x509/x509spki.c \
-    third_party/boringssl/crypto/x509/x_algor.c \
-    third_party/boringssl/crypto/x509/x_all.c \
-    third_party/boringssl/crypto/x509/x_attrib.c \
-    third_party/boringssl/crypto/x509/x_crl.c \
-    third_party/boringssl/crypto/x509/x_exten.c \
-    third_party/boringssl/crypto/x509/x_info.c \
-    third_party/boringssl/crypto/x509/x_name.c \
-    third_party/boringssl/crypto/x509/x_pkey.c \
-    third_party/boringssl/crypto/x509/x_pubkey.c \
-    third_party/boringssl/crypto/x509/x_req.c \
-    third_party/boringssl/crypto/x509/x_sig.c \
-    third_party/boringssl/crypto/x509/x_spki.c \
-    third_party/boringssl/crypto/x509/x_val.c \
-    third_party/boringssl/crypto/x509/x_x509.c \
-    third_party/boringssl/crypto/x509/x_x509a.c \
-    third_party/boringssl/crypto/x509v3/pcy_cache.c \
-    third_party/boringssl/crypto/x509v3/pcy_data.c \
-    third_party/boringssl/crypto/x509v3/pcy_lib.c \
-    third_party/boringssl/crypto/x509v3/pcy_map.c \
-    third_party/boringssl/crypto/x509v3/pcy_node.c \
-    third_party/boringssl/crypto/x509v3/pcy_tree.c \
-    third_party/boringssl/crypto/x509v3/v3_akey.c \
-    third_party/boringssl/crypto/x509v3/v3_akeya.c \
-    third_party/boringssl/crypto/x509v3/v3_alt.c \
-    third_party/boringssl/crypto/x509v3/v3_bcons.c \
-    third_party/boringssl/crypto/x509v3/v3_bitst.c \
-    third_party/boringssl/crypto/x509v3/v3_conf.c \
-    third_party/boringssl/crypto/x509v3/v3_cpols.c \
-    third_party/boringssl/crypto/x509v3/v3_crld.c \
-    third_party/boringssl/crypto/x509v3/v3_enum.c \
-    third_party/boringssl/crypto/x509v3/v3_extku.c \
-    third_party/boringssl/crypto/x509v3/v3_genn.c \
-    third_party/boringssl/crypto/x509v3/v3_ia5.c \
-    third_party/boringssl/crypto/x509v3/v3_info.c \
-    third_party/boringssl/crypto/x509v3/v3_int.c \
-    third_party/boringssl/crypto/x509v3/v3_lib.c \
-    third_party/boringssl/crypto/x509v3/v3_ncons.c \
-    third_party/boringssl/crypto/x509v3/v3_pci.c \
-    third_party/boringssl/crypto/x509v3/v3_pcia.c \
-    third_party/boringssl/crypto/x509v3/v3_pcons.c \
-    third_party/boringssl/crypto/x509v3/v3_pku.c \
-    third_party/boringssl/crypto/x509v3/v3_pmaps.c \
-    third_party/boringssl/crypto/x509v3/v3_prn.c \
-    third_party/boringssl/crypto/x509v3/v3_purp.c \
-    third_party/boringssl/crypto/x509v3/v3_skey.c \
-    third_party/boringssl/crypto/x509v3/v3_sxnet.c \
-    third_party/boringssl/crypto/x509v3/v3_utl.c \
-    third_party/boringssl/ssl/bio_ssl.cc \
-    third_party/boringssl/ssl/custom_extensions.cc \
-    third_party/boringssl/ssl/d1_both.cc \
-    third_party/boringssl/ssl/d1_lib.cc \
-    third_party/boringssl/ssl/d1_pkt.cc \
-    third_party/boringssl/ssl/d1_srtp.cc \
-    third_party/boringssl/ssl/dtls_method.cc \
-    third_party/boringssl/ssl/dtls_record.cc \
-    third_party/boringssl/ssl/handshake.cc \
-    third_party/boringssl/ssl/handshake_client.cc \
-    third_party/boringssl/ssl/handshake_server.cc \
-    third_party/boringssl/ssl/s3_both.cc \
-    third_party/boringssl/ssl/s3_lib.cc \
-    third_party/boringssl/ssl/s3_pkt.cc \
-    third_party/boringssl/ssl/ssl_aead_ctx.cc \
-    third_party/boringssl/ssl/ssl_asn1.cc \
-    third_party/boringssl/ssl/ssl_buffer.cc \
-    third_party/boringssl/ssl/ssl_cert.cc \
-    third_party/boringssl/ssl/ssl_cipher.cc \
-    third_party/boringssl/ssl/ssl_file.cc \
-    third_party/boringssl/ssl/ssl_key_share.cc \
-    third_party/boringssl/ssl/ssl_lib.cc \
-    third_party/boringssl/ssl/ssl_privkey.cc \
-    third_party/boringssl/ssl/ssl_session.cc \
-    third_party/boringssl/ssl/ssl_stat.cc \
-    third_party/boringssl/ssl/ssl_transcript.cc \
-    third_party/boringssl/ssl/ssl_versions.cc \
-    third_party/boringssl/ssl/ssl_x509.cc \
-    third_party/boringssl/ssl/t1_enc.cc \
-    third_party/boringssl/ssl/t1_lib.cc \
-    third_party/boringssl/ssl/tls13_both.cc \
-    third_party/boringssl/ssl/tls13_client.cc \
-    third_party/boringssl/ssl/tls13_enc.cc \
-    third_party/boringssl/ssl/tls13_server.cc \
-    third_party/boringssl/ssl/tls_method.cc \
-    third_party/boringssl/ssl/tls_record.cc \
-    third_party/boringssl/third_party/fiat/curve25519.c \
+    src/openssl/err_data.c \
+    third_party/openssl/crypto/asn1/a_bitstr.c \
+    third_party/openssl/crypto/asn1/a_bool.c \
+    third_party/openssl/crypto/asn1/a_d2i_fp.c \
+    third_party/openssl/crypto/asn1/a_dup.c \
+    third_party/openssl/crypto/asn1/a_enum.c \
+    third_party/openssl/crypto/asn1/a_gentm.c \
+    third_party/openssl/crypto/asn1/a_i2d_fp.c \
+    third_party/openssl/crypto/asn1/a_int.c \
+    third_party/openssl/crypto/asn1/a_mbstr.c \
+    third_party/openssl/crypto/asn1/a_object.c \
+    third_party/openssl/crypto/asn1/a_octet.c \
+    third_party/openssl/crypto/asn1/a_print.c \
+    third_party/openssl/crypto/asn1/a_strnid.c \
+    third_party/openssl/crypto/asn1/a_time.c \
+    third_party/openssl/crypto/asn1/a_type.c \
+    third_party/openssl/crypto/asn1/a_utctm.c \
+    third_party/openssl/crypto/asn1/a_utf8.c \
+    third_party/openssl/crypto/asn1/asn1_lib.c \
+    third_party/openssl/crypto/asn1/asn1_par.c \
+    third_party/openssl/crypto/asn1/asn_pack.c \
+    third_party/openssl/crypto/asn1/f_enum.c \
+    third_party/openssl/crypto/asn1/f_int.c \
+    third_party/openssl/crypto/asn1/f_string.c \
+    third_party/openssl/crypto/asn1/tasn_dec.c \
+    third_party/openssl/crypto/asn1/tasn_enc.c \
+    third_party/openssl/crypto/asn1/tasn_fre.c \
+    third_party/openssl/crypto/asn1/tasn_new.c \
+    third_party/openssl/crypto/asn1/tasn_typ.c \
+    third_party/openssl/crypto/asn1/tasn_utl.c \
+    third_party/openssl/crypto/asn1/time_support.c \
+    third_party/openssl/crypto/base64/base64.c \
+    third_party/openssl/crypto/bio/bio.c \
+    third_party/openssl/crypto/bio/bio_mem.c \
+    third_party/openssl/crypto/bio/connect.c \
+    third_party/openssl/crypto/bio/fd.c \
+    third_party/openssl/crypto/bio/file.c \
+    third_party/openssl/crypto/bio/hexdump.c \
+    third_party/openssl/crypto/bio/pair.c \
+    third_party/openssl/crypto/bio/printf.c \
+    third_party/openssl/crypto/bio/socket.c \
+    third_party/openssl/crypto/bio/socket_helper.c \
+    third_party/openssl/crypto/bn_extra/bn_asn1.c \
+    third_party/openssl/crypto/bn_extra/convert.c \
+    third_party/openssl/crypto/buf/buf.c \
+    third_party/openssl/crypto/bytestring/asn1_compat.c \
+    third_party/openssl/crypto/bytestring/ber.c \
+    third_party/openssl/crypto/bytestring/cbb.c \
+    third_party/openssl/crypto/bytestring/cbs.c \
+    third_party/openssl/crypto/chacha/chacha.c \
+    third_party/openssl/crypto/cipher_extra/cipher_extra.c \
+    third_party/openssl/crypto/cipher_extra/derive_key.c \
+    third_party/openssl/crypto/cipher_extra/e_aesctrhmac.c \
+    third_party/openssl/crypto/cipher_extra/e_aesgcmsiv.c \
+    third_party/openssl/crypto/cipher_extra/e_chacha20poly1305.c \
+    third_party/openssl/crypto/cipher_extra/e_null.c \
+    third_party/openssl/crypto/cipher_extra/e_rc2.c \
+    third_party/openssl/crypto/cipher_extra/e_rc4.c \
+    third_party/openssl/crypto/cipher_extra/e_ssl3.c \
+    third_party/openssl/crypto/cipher_extra/e_tls.c \
+    third_party/openssl/crypto/cipher_extra/tls_cbc.c \
+    third_party/openssl/crypto/cmac/cmac.c \
+    third_party/openssl/crypto/conf/conf.c \
+    third_party/openssl/crypto/cpu-aarch64-linux.c \
+    third_party/openssl/crypto/cpu-arm-linux.c \
+    third_party/openssl/crypto/cpu-arm.c \
+    third_party/openssl/crypto/cpu-intel.c \
+    third_party/openssl/crypto/cpu-ppc64le.c \
+    third_party/openssl/crypto/crypto.c \
+    third_party/openssl/crypto/curve25519/spake25519.c \
+    third_party/openssl/crypto/curve25519/x25519-x86_64.c \
+    third_party/openssl/crypto/dh/check.c \
+    third_party/openssl/crypto/dh/dh.c \
+    third_party/openssl/crypto/dh/dh_asn1.c \
+    third_party/openssl/crypto/dh/params.c \
+    third_party/openssl/crypto/digest_extra/digest_extra.c \
+    third_party/openssl/crypto/dsa/dsa.c \
+    third_party/openssl/crypto/dsa/dsa_asn1.c \
+    third_party/openssl/crypto/ec_extra/ec_asn1.c \
+    third_party/openssl/crypto/ecdh/ecdh.c \
+    third_party/openssl/crypto/ecdsa_extra/ecdsa_asn1.c \
+    third_party/openssl/crypto/engine/engine.c \
+    third_party/openssl/crypto/err/err.c \
+    third_party/openssl/crypto/evp/digestsign.c \
+    third_party/openssl/crypto/evp/evp.c \
+    third_party/openssl/crypto/evp/evp_asn1.c \
+    third_party/openssl/crypto/evp/evp_ctx.c \
+    third_party/openssl/crypto/evp/p_dsa_asn1.c \
+    third_party/openssl/crypto/evp/p_ec.c \
+    third_party/openssl/crypto/evp/p_ec_asn1.c \
+    third_party/openssl/crypto/evp/p_ed25519.c \
+    third_party/openssl/crypto/evp/p_ed25519_asn1.c \
+    third_party/openssl/crypto/evp/p_rsa.c \
+    third_party/openssl/crypto/evp/p_rsa_asn1.c \
+    third_party/openssl/crypto/evp/pbkdf.c \
+    third_party/openssl/crypto/evp/print.c \
+    third_party/openssl/crypto/evp/scrypt.c \
+    third_party/openssl/crypto/evp/sign.c \
+    third_party/openssl/crypto/ex_data.c \
+    third_party/openssl/crypto/fipsmodule/bcm.c \
+    third_party/openssl/crypto/fipsmodule/is_fips.c \
+    third_party/openssl/crypto/hkdf/hkdf.c \
+    third_party/openssl/crypto/lhash/lhash.c \
+    third_party/openssl/crypto/mem.c \
+    third_party/openssl/crypto/obj/obj.c \
+    third_party/openssl/crypto/obj/obj_xref.c \
+    third_party/openssl/crypto/pem/pem_all.c \
+    third_party/openssl/crypto/pem/pem_info.c \
+    third_party/openssl/crypto/pem/pem_lib.c \
+    third_party/openssl/crypto/pem/pem_oth.c \
+    third_party/openssl/crypto/pem/pem_pk8.c \
+    third_party/openssl/crypto/pem/pem_pkey.c \
+    third_party/openssl/crypto/pem/pem_x509.c \
+    third_party/openssl/crypto/pem/pem_xaux.c \
+    third_party/openssl/crypto/pkcs7/pkcs7.c \
+    third_party/openssl/crypto/pkcs7/pkcs7_x509.c \
+    third_party/openssl/crypto/pkcs8/p5_pbev2.c \
+    third_party/openssl/crypto/pkcs8/pkcs8.c \
+    third_party/openssl/crypto/pkcs8/pkcs8_x509.c \
+    third_party/openssl/crypto/poly1305/poly1305.c \
+    third_party/openssl/crypto/poly1305/poly1305_arm.c \
+    third_party/openssl/crypto/poly1305/poly1305_vec.c \
+    third_party/openssl/crypto/pool/pool.c \
+    third_party/openssl/crypto/rand_extra/deterministic.c \
+    third_party/openssl/crypto/rand_extra/forkunsafe.c \
+    third_party/openssl/crypto/rand_extra/fuchsia.c \
+    third_party/openssl/crypto/rand_extra/rand_extra.c \
+    third_party/openssl/crypto/rand_extra/windows.c \
+    third_party/openssl/crypto/rc4/rc4.c \
+    third_party/openssl/crypto/refcount_c11.c \
+    third_party/openssl/crypto/refcount_lock.c \
+    third_party/openssl/crypto/rsa_extra/rsa_asn1.c \
+    third_party/openssl/crypto/stack/stack.c \
+    third_party/openssl/crypto/thread.c \
+    third_party/openssl/crypto/thread_none.c \
+    third_party/openssl/crypto/thread_pthread.c \
+    third_party/openssl/crypto/thread_win.c \
+    third_party/openssl/crypto/x509/a_digest.c \
+    third_party/openssl/crypto/x509/a_sign.c \
+    third_party/openssl/crypto/x509/a_strex.c \
+    third_party/openssl/crypto/x509/a_verify.c \
+    third_party/openssl/crypto/x509/algorithm.c \
+    third_party/openssl/crypto/x509/asn1_gen.c \
+    third_party/openssl/crypto/x509/by_dir.c \
+    third_party/openssl/crypto/x509/by_file.c \
+    third_party/openssl/crypto/x509/i2d_pr.c \
+    third_party/openssl/crypto/x509/rsa_pss.c \
+    third_party/openssl/crypto/x509/t_crl.c \
+    third_party/openssl/crypto/x509/t_req.c \
+    third_party/openssl/crypto/x509/t_x509.c \
+    third_party/openssl/crypto/x509/t_x509a.c \
+    third_party/openssl/crypto/x509/x509.c \
+    third_party/openssl/crypto/x509/x509_att.c \
+    third_party/openssl/crypto/x509/x509_cmp.c \
+    third_party/openssl/crypto/x509/x509_d2.c \
+    third_party/openssl/crypto/x509/x509_def.c \
+    third_party/openssl/crypto/x509/x509_ext.c \
+    third_party/openssl/crypto/x509/x509_lu.c \
+    third_party/openssl/crypto/x509/x509_obj.c \
+    third_party/openssl/crypto/x509/x509_r2x.c \
+    third_party/openssl/crypto/x509/x509_req.c \
+    third_party/openssl/crypto/x509/x509_set.c \
+    third_party/openssl/crypto/x509/x509_trs.c \
+    third_party/openssl/crypto/x509/x509_txt.c \
+    third_party/openssl/crypto/x509/x509_v3.c \
+    third_party/openssl/crypto/x509/x509_vfy.c \
+    third_party/openssl/crypto/x509/x509_vpm.c \
+    third_party/openssl/crypto/x509/x509cset.c \
+    third_party/openssl/crypto/x509/x509name.c \
+    third_party/openssl/crypto/x509/x509rset.c \
+    third_party/openssl/crypto/x509/x509spki.c \
+    third_party/openssl/crypto/x509/x_algor.c \
+    third_party/openssl/crypto/x509/x_all.c \
+    third_party/openssl/crypto/x509/x_attrib.c \
+    third_party/openssl/crypto/x509/x_crl.c \
+    third_party/openssl/crypto/x509/x_exten.c \
+    third_party/openssl/crypto/x509/x_info.c \
+    third_party/openssl/crypto/x509/x_name.c \
+    third_party/openssl/crypto/x509/x_pkey.c \
+    third_party/openssl/crypto/x509/x_pubkey.c \
+    third_party/openssl/crypto/x509/x_req.c \
+    third_party/openssl/crypto/x509/x_sig.c \
+    third_party/openssl/crypto/x509/x_spki.c \
+    third_party/openssl/crypto/x509/x_val.c \
+    third_party/openssl/crypto/x509/x_x509.c \
+    third_party/openssl/crypto/x509/x_x509a.c \
+    third_party/openssl/crypto/x509v3/pcy_cache.c \
+    third_party/openssl/crypto/x509v3/pcy_data.c \
+    third_party/openssl/crypto/x509v3/pcy_lib.c \
+    third_party/openssl/crypto/x509v3/pcy_map.c \
+    third_party/openssl/crypto/x509v3/pcy_node.c \
+    third_party/openssl/crypto/x509v3/pcy_tree.c \
+    third_party/openssl/crypto/x509v3/v3_akey.c \
+    third_party/openssl/crypto/x509v3/v3_akeya.c \
+    third_party/openssl/crypto/x509v3/v3_alt.c \
+    third_party/openssl/crypto/x509v3/v3_bcons.c \
+    third_party/openssl/crypto/x509v3/v3_bitst.c \
+    third_party/openssl/crypto/x509v3/v3_conf.c \
+    third_party/openssl/crypto/x509v3/v3_cpols.c \
+    third_party/openssl/crypto/x509v3/v3_crld.c \
+    third_party/openssl/crypto/x509v3/v3_enum.c \
+    third_party/openssl/crypto/x509v3/v3_extku.c \
+    third_party/openssl/crypto/x509v3/v3_genn.c \
+    third_party/openssl/crypto/x509v3/v3_ia5.c \
+    third_party/openssl/crypto/x509v3/v3_info.c \
+    third_party/openssl/crypto/x509v3/v3_int.c \
+    third_party/openssl/crypto/x509v3/v3_lib.c \
+    third_party/openssl/crypto/x509v3/v3_ncons.c \
+    third_party/openssl/crypto/x509v3/v3_pci.c \
+    third_party/openssl/crypto/x509v3/v3_pcia.c \
+    third_party/openssl/crypto/x509v3/v3_pcons.c \
+    third_party/openssl/crypto/x509v3/v3_pku.c \
+    third_party/openssl/crypto/x509v3/v3_pmaps.c \
+    third_party/openssl/crypto/x509v3/v3_prn.c \
+    third_party/openssl/crypto/x509v3/v3_purp.c \
+    third_party/openssl/crypto/x509v3/v3_skey.c \
+    third_party/openssl/crypto/x509v3/v3_sxnet.c \
+    third_party/openssl/crypto/x509v3/v3_utl.c \
+    third_party/openssl/ssl/bio_ssl.cc \
+    third_party/openssl/ssl/custom_extensions.cc \
+    third_party/openssl/ssl/d1_both.cc \
+    third_party/openssl/ssl/d1_lib.cc \
+    third_party/openssl/ssl/d1_pkt.cc \
+    third_party/openssl/ssl/d1_srtp.cc \
+    third_party/openssl/ssl/dtls_method.cc \
+    third_party/openssl/ssl/dtls_record.cc \
+    third_party/openssl/ssl/handshake.cc \
+    third_party/openssl/ssl/handshake_client.cc \
+    third_party/openssl/ssl/handshake_server.cc \
+    third_party/openssl/ssl/s3_both.cc \
+    third_party/openssl/ssl/s3_lib.cc \
+    third_party/openssl/ssl/s3_pkt.cc \
+    third_party/openssl/ssl/ssl_aead_ctx.cc \
+    third_party/openssl/ssl/ssl_asn1.cc \
+    third_party/openssl/ssl/ssl_buffer.cc \
+    third_party/openssl/ssl/ssl_cert.cc \
+    third_party/openssl/ssl/ssl_cipher.cc \
+    third_party/openssl/ssl/ssl_file.cc \
+    third_party/openssl/ssl/ssl_key_share.cc \
+    third_party/openssl/ssl/ssl_lib.cc \
+    third_party/openssl/ssl/ssl_privkey.cc \
+    third_party/openssl/ssl/ssl_session.cc \
+    third_party/openssl/ssl/ssl_stat.cc \
+    third_party/openssl/ssl/ssl_transcript.cc \
+    third_party/openssl/ssl/ssl_versions.cc \
+    third_party/openssl/ssl/ssl_x509.cc \
+    third_party/openssl/ssl/t1_enc.cc \
+    third_party/openssl/ssl/t1_lib.cc \
+    third_party/openssl/ssl/tls13_both.cc \
+    third_party/openssl/ssl/tls13_client.cc \
+    third_party/openssl/ssl/tls13_enc.cc \
+    third_party/openssl/ssl/tls13_server.cc \
+    third_party/openssl/ssl/tls_method.cc \
+    third_party/openssl/ssl/tls_record.cc \
+    third_party/openssl/third_party/fiat/curve25519.c \
 
 PUBLIC_HEADERS_C += \
 
 LIBBORINGSSL_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_SRC))))
 
-$(LIBBORINGSSL_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
-$(LIBDIR)/$(CONFIG)/libboringssl.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(LIBBORINGSSL_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(LIBBORINGSSL_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl.a $(LIBBORINGSSL_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl.a $(LIBBORINGSSL_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl.a
 endif
 
 
@@ -7659,15 +7659,15 @@ endif
 
 
 LIBBORINGSSL_TEST_UTIL_SRC = \
-    third_party/boringssl/crypto/test/file_test.cc \
-    third_party/boringssl/crypto/test/malloc.cc \
-    third_party/boringssl/crypto/test/test_util.cc \
+    third_party/openssl/crypto/test/file_test.cc \
+    third_party/openssl/crypto/test/malloc.cc \
+    third_party/openssl/crypto/test/test_util.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_TEST_UTIL_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_TEST_UTIL_SRC))))
 
-$(LIBBORINGSSL_TEST_UTIL_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_TEST_UTIL_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_TEST_UTIL_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_TEST_UTIL_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -7675,18 +7675,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_test_util.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_test_util.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_test_util.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_TEST_UTIL_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_test_util.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_TEST_UTIL_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBBORINGSSL_TEST_UTIL_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBBORINGSSL_TEST_UTIL_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a
 endif
 
 
@@ -7700,13 +7700,13 @@ endif
 
 
 LIBBORINGSSL_CRYPTO_TEST_DATA_LIB_SRC = \
-    src/boringssl/crypto_test_data.cc \
+    src/openssl/crypto_test_data.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_CRYPTO_TEST_DATA_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_CRYPTO_TEST_DATA_LIB_SRC))))
 
-$(LIBBORINGSSL_CRYPTO_TEST_DATA_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_CRYPTO_TEST_DATA_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_CRYPTO_TEST_DATA_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_CRYPTO_TEST_DATA_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -7714,18 +7714,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_crypto_test_data_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_crypto_test_data_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_crypto_test_data_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_CRYPTO_TEST_DATA_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_crypto_test_data_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_CRYPTO_TEST_DATA_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_crypto_test_data_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_crypto_test_data_lib.a $(LIBBORINGSSL_CRYPTO_TEST_DATA_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_crypto_test_data_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_crypto_test_data_lib.a $(LIBBORINGSSL_CRYPTO_TEST_DATA_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_crypto_test_data_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_crypto_test_data_lib.a
 endif
 
 
@@ -7739,13 +7739,13 @@ endif
 
 
 LIBBORINGSSL_ASN1_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/asn1/asn1_test.cc \
+    third_party/openssl/crypto/asn1/asn1_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_ASN1_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_ASN1_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_ASN1_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_ASN1_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_ASN1_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_ASN1_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -7753,18 +7753,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_asn1_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_asn1_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_asn1_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_ASN1_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_asn1_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_ASN1_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_asn1_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_asn1_test_lib.a $(LIBBORINGSSL_ASN1_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_asn1_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_asn1_test_lib.a $(LIBBORINGSSL_ASN1_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_asn1_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_asn1_test_lib.a
 endif
 
 
@@ -7778,13 +7778,13 @@ endif
 
 
 LIBBORINGSSL_BASE64_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/base64/base64_test.cc \
+    third_party/openssl/crypto/base64/base64_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_BASE64_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_BASE64_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_BASE64_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_BASE64_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_BASE64_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_BASE64_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -7792,18 +7792,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_base64_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_base64_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_base64_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_BASE64_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_base64_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_BASE64_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_base64_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_base64_test_lib.a $(LIBBORINGSSL_BASE64_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_base64_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_base64_test_lib.a $(LIBBORINGSSL_BASE64_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_base64_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_base64_test_lib.a
 endif
 
 
@@ -7817,13 +7817,13 @@ endif
 
 
 LIBBORINGSSL_BIO_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/bio/bio_test.cc \
+    third_party/openssl/crypto/bio/bio_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_BIO_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_BIO_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_BIO_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_BIO_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_BIO_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_BIO_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -7831,18 +7831,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_bio_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_bio_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_bio_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_BIO_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_bio_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_BIO_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_bio_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_bio_test_lib.a $(LIBBORINGSSL_BIO_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_bio_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_bio_test_lib.a $(LIBBORINGSSL_BIO_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_bio_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_bio_test_lib.a
 endif
 
 
@@ -7856,13 +7856,13 @@ endif
 
 
 LIBBORINGSSL_BUF_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/buf/buf_test.cc \
+    third_party/openssl/crypto/buf/buf_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_BUF_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_BUF_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_BUF_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_BUF_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_BUF_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_BUF_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -7870,18 +7870,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_buf_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_buf_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_buf_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_BUF_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_buf_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_BUF_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_buf_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_buf_test_lib.a $(LIBBORINGSSL_BUF_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_buf_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_buf_test_lib.a $(LIBBORINGSSL_BUF_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_buf_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_buf_test_lib.a
 endif
 
 
@@ -7895,13 +7895,13 @@ endif
 
 
 LIBBORINGSSL_BYTESTRING_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/bytestring/bytestring_test.cc \
+    third_party/openssl/crypto/bytestring/bytestring_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_BYTESTRING_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_BYTESTRING_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_BYTESTRING_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_BYTESTRING_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_BYTESTRING_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_BYTESTRING_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -7909,18 +7909,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_bytestring_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_bytestring_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_bytestring_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_BYTESTRING_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_bytestring_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_BYTESTRING_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_bytestring_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_bytestring_test_lib.a $(LIBBORINGSSL_BYTESTRING_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_bytestring_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_bytestring_test_lib.a $(LIBBORINGSSL_BYTESTRING_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_bytestring_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_bytestring_test_lib.a
 endif
 
 
@@ -7934,13 +7934,13 @@ endif
 
 
 LIBBORINGSSL_CHACHA_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/chacha/chacha_test.cc \
+    third_party/openssl/crypto/chacha/chacha_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_CHACHA_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_CHACHA_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_CHACHA_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_CHACHA_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_CHACHA_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_CHACHA_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -7948,18 +7948,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_chacha_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_chacha_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_chacha_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_CHACHA_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_chacha_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_CHACHA_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_chacha_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_chacha_test_lib.a $(LIBBORINGSSL_CHACHA_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_chacha_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_chacha_test_lib.a $(LIBBORINGSSL_CHACHA_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_chacha_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_chacha_test_lib.a
 endif
 
 
@@ -7973,13 +7973,13 @@ endif
 
 
 LIBBORINGSSL_AEAD_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/cipher_extra/aead_test.cc \
+    third_party/openssl/crypto/cipher_extra/aead_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_AEAD_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_AEAD_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_AEAD_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_AEAD_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_AEAD_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_AEAD_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -7987,18 +7987,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_aead_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_aead_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_aead_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_AEAD_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_aead_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_AEAD_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_aead_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_aead_test_lib.a $(LIBBORINGSSL_AEAD_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_aead_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_aead_test_lib.a $(LIBBORINGSSL_AEAD_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_aead_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_aead_test_lib.a
 endif
 
 
@@ -8012,13 +8012,13 @@ endif
 
 
 LIBBORINGSSL_CIPHER_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/cipher_extra/cipher_test.cc \
+    third_party/openssl/crypto/cipher_extra/cipher_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_CIPHER_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_CIPHER_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_CIPHER_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_CIPHER_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_CIPHER_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_CIPHER_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8026,18 +8026,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_cipher_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_cipher_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_cipher_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_CIPHER_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_cipher_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_CIPHER_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_cipher_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_cipher_test_lib.a $(LIBBORINGSSL_CIPHER_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_cipher_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_cipher_test_lib.a $(LIBBORINGSSL_CIPHER_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_cipher_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_cipher_test_lib.a
 endif
 
 
@@ -8051,13 +8051,13 @@ endif
 
 
 LIBBORINGSSL_CMAC_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/cmac/cmac_test.cc \
+    third_party/openssl/crypto/cmac/cmac_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_CMAC_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_CMAC_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_CMAC_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_CMAC_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_CMAC_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_CMAC_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8065,18 +8065,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_cmac_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_cmac_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_cmac_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_CMAC_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_cmac_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_CMAC_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_cmac_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_cmac_test_lib.a $(LIBBORINGSSL_CMAC_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_cmac_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_cmac_test_lib.a $(LIBBORINGSSL_CMAC_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_cmac_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_cmac_test_lib.a
 endif
 
 
@@ -8090,13 +8090,13 @@ endif
 
 
 LIBBORINGSSL_COMPILER_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/compiler_test.cc \
+    third_party/openssl/crypto/compiler_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_COMPILER_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_COMPILER_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_COMPILER_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_COMPILER_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_COMPILER_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_COMPILER_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8104,18 +8104,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_compiler_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_compiler_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_compiler_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_COMPILER_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_compiler_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_COMPILER_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_compiler_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_compiler_test_lib.a $(LIBBORINGSSL_COMPILER_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_compiler_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_compiler_test_lib.a $(LIBBORINGSSL_COMPILER_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_compiler_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_compiler_test_lib.a
 endif
 
 
@@ -8129,13 +8129,13 @@ endif
 
 
 LIBBORINGSSL_CONSTANT_TIME_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/constant_time_test.cc \
+    third_party/openssl/crypto/constant_time_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_CONSTANT_TIME_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_CONSTANT_TIME_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_CONSTANT_TIME_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_CONSTANT_TIME_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_CONSTANT_TIME_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_CONSTANT_TIME_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8143,18 +8143,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_constant_time_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_constant_time_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_constant_time_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_CONSTANT_TIME_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_constant_time_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_CONSTANT_TIME_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_constant_time_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_constant_time_test_lib.a $(LIBBORINGSSL_CONSTANT_TIME_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_constant_time_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_constant_time_test_lib.a $(LIBBORINGSSL_CONSTANT_TIME_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_constant_time_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_constant_time_test_lib.a
 endif
 
 
@@ -8168,13 +8168,13 @@ endif
 
 
 LIBBORINGSSL_ED25519_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/curve25519/ed25519_test.cc \
+    third_party/openssl/crypto/curve25519/ed25519_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_ED25519_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_ED25519_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_ED25519_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_ED25519_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_ED25519_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_ED25519_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8182,18 +8182,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_ed25519_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_ed25519_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_ed25519_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_ED25519_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_ed25519_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_ED25519_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_ed25519_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_ed25519_test_lib.a $(LIBBORINGSSL_ED25519_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_ed25519_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_ed25519_test_lib.a $(LIBBORINGSSL_ED25519_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_ed25519_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_ed25519_test_lib.a
 endif
 
 
@@ -8207,13 +8207,13 @@ endif
 
 
 LIBBORINGSSL_SPAKE25519_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/curve25519/spake25519_test.cc \
+    third_party/openssl/crypto/curve25519/spake25519_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_SPAKE25519_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_SPAKE25519_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_SPAKE25519_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_SPAKE25519_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_SPAKE25519_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_SPAKE25519_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8221,18 +8221,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_spake25519_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_spake25519_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_spake25519_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_SPAKE25519_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_spake25519_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_SPAKE25519_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_spake25519_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_spake25519_test_lib.a $(LIBBORINGSSL_SPAKE25519_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_spake25519_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_spake25519_test_lib.a $(LIBBORINGSSL_SPAKE25519_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_spake25519_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_spake25519_test_lib.a
 endif
 
 
@@ -8246,13 +8246,13 @@ endif
 
 
 LIBBORINGSSL_X25519_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/curve25519/x25519_test.cc \
+    third_party/openssl/crypto/curve25519/x25519_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_X25519_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_X25519_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_X25519_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_X25519_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_X25519_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_X25519_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8260,18 +8260,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_x25519_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_x25519_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_x25519_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_X25519_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_x25519_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_X25519_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_x25519_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_x25519_test_lib.a $(LIBBORINGSSL_X25519_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_x25519_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_x25519_test_lib.a $(LIBBORINGSSL_X25519_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_x25519_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_x25519_test_lib.a
 endif
 
 
@@ -8285,13 +8285,13 @@ endif
 
 
 LIBBORINGSSL_DH_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/dh/dh_test.cc \
+    third_party/openssl/crypto/dh/dh_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_DH_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_DH_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_DH_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_DH_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_DH_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_DH_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8299,18 +8299,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_dh_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_dh_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_dh_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_DH_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_dh_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_DH_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_dh_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_dh_test_lib.a $(LIBBORINGSSL_DH_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_dh_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_dh_test_lib.a $(LIBBORINGSSL_DH_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_dh_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_dh_test_lib.a
 endif
 
 
@@ -8324,13 +8324,13 @@ endif
 
 
 LIBBORINGSSL_DIGEST_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/digest_extra/digest_test.cc \
+    third_party/openssl/crypto/digest_extra/digest_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_DIGEST_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_DIGEST_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_DIGEST_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_DIGEST_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_DIGEST_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_DIGEST_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8338,18 +8338,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_digest_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_digest_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_digest_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_DIGEST_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_digest_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_DIGEST_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_digest_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_digest_test_lib.a $(LIBBORINGSSL_DIGEST_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_digest_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_digest_test_lib.a $(LIBBORINGSSL_DIGEST_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_digest_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_digest_test_lib.a
 endif
 
 
@@ -8363,13 +8363,13 @@ endif
 
 
 LIBBORINGSSL_DSA_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/dsa/dsa_test.cc \
+    third_party/openssl/crypto/dsa/dsa_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_DSA_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_DSA_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_DSA_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_DSA_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_DSA_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_DSA_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8377,18 +8377,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_dsa_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_dsa_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_dsa_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_DSA_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_dsa_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_DSA_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_dsa_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_dsa_test_lib.a $(LIBBORINGSSL_DSA_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_dsa_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_dsa_test_lib.a $(LIBBORINGSSL_DSA_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_dsa_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_dsa_test_lib.a
 endif
 
 
@@ -8402,13 +8402,13 @@ endif
 
 
 LIBBORINGSSL_ECDH_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/ecdh/ecdh_test.cc \
+    third_party/openssl/crypto/ecdh/ecdh_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_ECDH_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_ECDH_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_ECDH_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_ECDH_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_ECDH_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_ECDH_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8416,18 +8416,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_ecdh_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_ecdh_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_ecdh_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_ECDH_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_ecdh_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_ECDH_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_ecdh_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_ecdh_test_lib.a $(LIBBORINGSSL_ECDH_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_ecdh_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_ecdh_test_lib.a $(LIBBORINGSSL_ECDH_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_ecdh_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_ecdh_test_lib.a
 endif
 
 
@@ -8441,13 +8441,13 @@ endif
 
 
 LIBBORINGSSL_ERR_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/err/err_test.cc \
+    third_party/openssl/crypto/err/err_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_ERR_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_ERR_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_ERR_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_ERR_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_ERR_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_ERR_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8455,18 +8455,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_err_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_err_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_err_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_ERR_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_err_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_ERR_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_err_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_err_test_lib.a $(LIBBORINGSSL_ERR_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_err_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_err_test_lib.a $(LIBBORINGSSL_ERR_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_err_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_err_test_lib.a
 endif
 
 
@@ -8480,13 +8480,13 @@ endif
 
 
 LIBBORINGSSL_EVP_EXTRA_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/evp/evp_extra_test.cc \
+    third_party/openssl/crypto/evp/evp_extra_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_EVP_EXTRA_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_EVP_EXTRA_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_EVP_EXTRA_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_EVP_EXTRA_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_EVP_EXTRA_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_EVP_EXTRA_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8494,18 +8494,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_evp_extra_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_evp_extra_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_evp_extra_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_EVP_EXTRA_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_evp_extra_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_EVP_EXTRA_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_evp_extra_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_evp_extra_test_lib.a $(LIBBORINGSSL_EVP_EXTRA_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_evp_extra_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_evp_extra_test_lib.a $(LIBBORINGSSL_EVP_EXTRA_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_evp_extra_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_evp_extra_test_lib.a
 endif
 
 
@@ -8519,13 +8519,13 @@ endif
 
 
 LIBBORINGSSL_EVP_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/evp/evp_test.cc \
+    third_party/openssl/crypto/evp/evp_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_EVP_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_EVP_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_EVP_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_EVP_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_EVP_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_EVP_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8533,18 +8533,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_evp_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_evp_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_evp_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_EVP_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_evp_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_EVP_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_evp_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_evp_test_lib.a $(LIBBORINGSSL_EVP_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_evp_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_evp_test_lib.a $(LIBBORINGSSL_EVP_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_evp_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_evp_test_lib.a
 endif
 
 
@@ -8558,13 +8558,13 @@ endif
 
 
 LIBBORINGSSL_PBKDF_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/evp/pbkdf_test.cc \
+    third_party/openssl/crypto/evp/pbkdf_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_PBKDF_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_PBKDF_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_PBKDF_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_PBKDF_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_PBKDF_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_PBKDF_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8572,18 +8572,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_pbkdf_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_pbkdf_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_pbkdf_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_PBKDF_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_pbkdf_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_PBKDF_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_pbkdf_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_pbkdf_test_lib.a $(LIBBORINGSSL_PBKDF_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_pbkdf_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_pbkdf_test_lib.a $(LIBBORINGSSL_PBKDF_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_pbkdf_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_pbkdf_test_lib.a
 endif
 
 
@@ -8597,13 +8597,13 @@ endif
 
 
 LIBBORINGSSL_SCRYPT_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/evp/scrypt_test.cc \
+    third_party/openssl/crypto/evp/scrypt_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_SCRYPT_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_SCRYPT_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_SCRYPT_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_SCRYPT_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_SCRYPT_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_SCRYPT_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8611,18 +8611,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_scrypt_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_scrypt_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_scrypt_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_SCRYPT_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_scrypt_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_SCRYPT_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_scrypt_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_scrypt_test_lib.a $(LIBBORINGSSL_SCRYPT_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_scrypt_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_scrypt_test_lib.a $(LIBBORINGSSL_SCRYPT_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_scrypt_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_scrypt_test_lib.a
 endif
 
 
@@ -8636,13 +8636,13 @@ endif
 
 
 LIBBORINGSSL_AES_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/fipsmodule/aes/aes_test.cc \
+    third_party/openssl/crypto/fipsmodule/aes/aes_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_AES_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_AES_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_AES_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_AES_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_AES_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_AES_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8650,18 +8650,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_aes_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_aes_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_aes_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_AES_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_aes_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_AES_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_aes_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_aes_test_lib.a $(LIBBORINGSSL_AES_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_aes_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_aes_test_lib.a $(LIBBORINGSSL_AES_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_aes_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_aes_test_lib.a
 endif
 
 
@@ -8675,13 +8675,13 @@ endif
 
 
 LIBBORINGSSL_BN_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/fipsmodule/bn/bn_test.cc \
+    third_party/openssl/crypto/fipsmodule/bn/bn_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_BN_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_BN_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_BN_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_BN_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_BN_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_BN_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8689,18 +8689,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_bn_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_bn_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_bn_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_BN_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_bn_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_BN_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_bn_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_bn_test_lib.a $(LIBBORINGSSL_BN_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_bn_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_bn_test_lib.a $(LIBBORINGSSL_BN_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_bn_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_bn_test_lib.a
 endif
 
 
@@ -8714,13 +8714,13 @@ endif
 
 
 LIBBORINGSSL_EC_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/fipsmodule/ec/ec_test.cc \
+    third_party/openssl/crypto/fipsmodule/ec/ec_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_EC_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_EC_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_EC_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_EC_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_EC_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_EC_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8728,18 +8728,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_ec_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_ec_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_ec_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_EC_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_ec_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_EC_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_ec_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_ec_test_lib.a $(LIBBORINGSSL_EC_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_ec_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_ec_test_lib.a $(LIBBORINGSSL_EC_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_ec_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_ec_test_lib.a
 endif
 
 
@@ -8753,13 +8753,13 @@ endif
 
 
 LIBBORINGSSL_P256-X86_64_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/fipsmodule/ec/p256-x86_64_test.cc \
+    third_party/openssl/crypto/fipsmodule/ec/p256-x86_64_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_P256-X86_64_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_P256-X86_64_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_P256-X86_64_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_P256-X86_64_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_P256-X86_64_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_P256-X86_64_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8767,18 +8767,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_p256-x86_64_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_p256-x86_64_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_p256-x86_64_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_P256-X86_64_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_p256-x86_64_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_P256-X86_64_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_p256-x86_64_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_p256-x86_64_test_lib.a $(LIBBORINGSSL_P256-X86_64_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_p256-x86_64_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_p256-x86_64_test_lib.a $(LIBBORINGSSL_P256-X86_64_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_p256-x86_64_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_p256-x86_64_test_lib.a
 endif
 
 
@@ -8792,13 +8792,13 @@ endif
 
 
 LIBBORINGSSL_ECDSA_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/fipsmodule/ecdsa/ecdsa_test.cc \
+    third_party/openssl/crypto/fipsmodule/ecdsa/ecdsa_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_ECDSA_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_ECDSA_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_ECDSA_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_ECDSA_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_ECDSA_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_ECDSA_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8806,18 +8806,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_ecdsa_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_ecdsa_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_ecdsa_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_ECDSA_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_ecdsa_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_ECDSA_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_ecdsa_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_ecdsa_test_lib.a $(LIBBORINGSSL_ECDSA_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_ecdsa_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_ecdsa_test_lib.a $(LIBBORINGSSL_ECDSA_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_ecdsa_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_ecdsa_test_lib.a
 endif
 
 
@@ -8831,13 +8831,13 @@ endif
 
 
 LIBBORINGSSL_GCM_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/fipsmodule/modes/gcm_test.cc \
+    third_party/openssl/crypto/fipsmodule/modes/gcm_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_GCM_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_GCM_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_GCM_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_GCM_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_GCM_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_GCM_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8845,18 +8845,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_gcm_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_gcm_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_gcm_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_GCM_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_gcm_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_GCM_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_gcm_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_gcm_test_lib.a $(LIBBORINGSSL_GCM_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_gcm_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_gcm_test_lib.a $(LIBBORINGSSL_GCM_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_gcm_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_gcm_test_lib.a
 endif
 
 
@@ -8870,13 +8870,13 @@ endif
 
 
 LIBBORINGSSL_CTRDRBG_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/fipsmodule/rand/ctrdrbg_test.cc \
+    third_party/openssl/crypto/fipsmodule/rand/ctrdrbg_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_CTRDRBG_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_CTRDRBG_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_CTRDRBG_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_CTRDRBG_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_CTRDRBG_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_CTRDRBG_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8884,18 +8884,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_ctrdrbg_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_ctrdrbg_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_ctrdrbg_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_CTRDRBG_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_ctrdrbg_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_CTRDRBG_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_ctrdrbg_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_ctrdrbg_test_lib.a $(LIBBORINGSSL_CTRDRBG_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_ctrdrbg_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_ctrdrbg_test_lib.a $(LIBBORINGSSL_CTRDRBG_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_ctrdrbg_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_ctrdrbg_test_lib.a
 endif
 
 
@@ -8909,13 +8909,13 @@ endif
 
 
 LIBBORINGSSL_HKDF_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/hkdf/hkdf_test.cc \
+    third_party/openssl/crypto/hkdf/hkdf_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_HKDF_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_HKDF_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_HKDF_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_HKDF_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_HKDF_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_HKDF_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8923,18 +8923,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_hkdf_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_hkdf_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_hkdf_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_HKDF_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_hkdf_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_HKDF_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_hkdf_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_hkdf_test_lib.a $(LIBBORINGSSL_HKDF_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_hkdf_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_hkdf_test_lib.a $(LIBBORINGSSL_HKDF_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_hkdf_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_hkdf_test_lib.a
 endif
 
 
@@ -8948,13 +8948,13 @@ endif
 
 
 LIBBORINGSSL_HMAC_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/hmac_extra/hmac_test.cc \
+    third_party/openssl/crypto/hmac_extra/hmac_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_HMAC_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_HMAC_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_HMAC_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_HMAC_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_HMAC_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_HMAC_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -8962,18 +8962,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_hmac_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_hmac_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_hmac_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_HMAC_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_hmac_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_HMAC_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_hmac_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_hmac_test_lib.a $(LIBBORINGSSL_HMAC_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_hmac_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_hmac_test_lib.a $(LIBBORINGSSL_HMAC_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_hmac_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_hmac_test_lib.a
 endif
 
 
@@ -8987,13 +8987,13 @@ endif
 
 
 LIBBORINGSSL_LHASH_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/lhash/lhash_test.cc \
+    third_party/openssl/crypto/lhash/lhash_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_LHASH_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_LHASH_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_LHASH_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_LHASH_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_LHASH_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_LHASH_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9001,18 +9001,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_lhash_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_lhash_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_lhash_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_LHASH_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_lhash_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_LHASH_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_lhash_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_lhash_test_lib.a $(LIBBORINGSSL_LHASH_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_lhash_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_lhash_test_lib.a $(LIBBORINGSSL_LHASH_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_lhash_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_lhash_test_lib.a
 endif
 
 
@@ -9026,13 +9026,13 @@ endif
 
 
 LIBBORINGSSL_OBJ_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/obj/obj_test.cc \
+    third_party/openssl/crypto/obj/obj_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_OBJ_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_OBJ_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_OBJ_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_OBJ_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_OBJ_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_OBJ_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9040,18 +9040,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_obj_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_obj_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_obj_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_OBJ_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_obj_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_OBJ_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_obj_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_obj_test_lib.a $(LIBBORINGSSL_OBJ_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_obj_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_obj_test_lib.a $(LIBBORINGSSL_OBJ_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_obj_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_obj_test_lib.a
 endif
 
 
@@ -9065,13 +9065,13 @@ endif
 
 
 LIBBORINGSSL_PKCS7_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/pkcs7/pkcs7_test.cc \
+    third_party/openssl/crypto/pkcs7/pkcs7_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_PKCS7_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_PKCS7_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_PKCS7_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_PKCS7_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_PKCS7_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_PKCS7_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9079,18 +9079,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_pkcs7_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_pkcs7_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_pkcs7_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_PKCS7_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_pkcs7_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_PKCS7_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_pkcs7_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_pkcs7_test_lib.a $(LIBBORINGSSL_PKCS7_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_pkcs7_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_pkcs7_test_lib.a $(LIBBORINGSSL_PKCS7_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_pkcs7_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_pkcs7_test_lib.a
 endif
 
 
@@ -9104,13 +9104,13 @@ endif
 
 
 LIBBORINGSSL_PKCS12_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/pkcs8/pkcs12_test.cc \
+    third_party/openssl/crypto/pkcs8/pkcs12_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_PKCS12_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_PKCS12_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_PKCS12_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_PKCS12_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_PKCS12_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_PKCS12_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9118,18 +9118,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_pkcs12_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_pkcs12_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_pkcs12_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_PKCS12_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_pkcs12_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_PKCS12_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_pkcs12_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_pkcs12_test_lib.a $(LIBBORINGSSL_PKCS12_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_pkcs12_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_pkcs12_test_lib.a $(LIBBORINGSSL_PKCS12_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_pkcs12_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_pkcs12_test_lib.a
 endif
 
 
@@ -9143,13 +9143,13 @@ endif
 
 
 LIBBORINGSSL_PKCS8_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/pkcs8/pkcs8_test.cc \
+    third_party/openssl/crypto/pkcs8/pkcs8_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_PKCS8_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_PKCS8_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_PKCS8_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_PKCS8_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_PKCS8_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_PKCS8_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9157,18 +9157,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_pkcs8_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_pkcs8_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_pkcs8_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_PKCS8_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_pkcs8_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_PKCS8_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_pkcs8_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_pkcs8_test_lib.a $(LIBBORINGSSL_PKCS8_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_pkcs8_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_pkcs8_test_lib.a $(LIBBORINGSSL_PKCS8_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_pkcs8_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_pkcs8_test_lib.a
 endif
 
 
@@ -9182,13 +9182,13 @@ endif
 
 
 LIBBORINGSSL_POLY1305_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/poly1305/poly1305_test.cc \
+    third_party/openssl/crypto/poly1305/poly1305_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_POLY1305_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_POLY1305_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_POLY1305_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_POLY1305_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_POLY1305_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_POLY1305_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9196,18 +9196,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_poly1305_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_poly1305_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_poly1305_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_POLY1305_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_poly1305_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_POLY1305_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_poly1305_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_poly1305_test_lib.a $(LIBBORINGSSL_POLY1305_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_poly1305_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_poly1305_test_lib.a $(LIBBORINGSSL_POLY1305_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_poly1305_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_poly1305_test_lib.a
 endif
 
 
@@ -9221,13 +9221,13 @@ endif
 
 
 LIBBORINGSSL_POOL_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/pool/pool_test.cc \
+    third_party/openssl/crypto/pool/pool_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_POOL_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_POOL_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_POOL_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_POOL_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_POOL_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_POOL_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9235,18 +9235,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_pool_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_pool_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_pool_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_POOL_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_pool_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_POOL_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_pool_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_pool_test_lib.a $(LIBBORINGSSL_POOL_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_pool_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_pool_test_lib.a $(LIBBORINGSSL_POOL_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_pool_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_pool_test_lib.a
 endif
 
 
@@ -9260,13 +9260,13 @@ endif
 
 
 LIBBORINGSSL_REFCOUNT_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/refcount_test.cc \
+    third_party/openssl/crypto/refcount_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_REFCOUNT_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_REFCOUNT_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_REFCOUNT_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_REFCOUNT_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_REFCOUNT_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_REFCOUNT_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9274,18 +9274,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_refcount_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_refcount_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_refcount_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_REFCOUNT_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_refcount_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_REFCOUNT_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_refcount_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_refcount_test_lib.a $(LIBBORINGSSL_REFCOUNT_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_refcount_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_refcount_test_lib.a $(LIBBORINGSSL_REFCOUNT_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_refcount_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_refcount_test_lib.a
 endif
 
 
@@ -9299,13 +9299,13 @@ endif
 
 
 LIBBORINGSSL_RSA_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/rsa_extra/rsa_test.cc \
+    third_party/openssl/crypto/rsa_extra/rsa_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_RSA_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_RSA_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_RSA_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_RSA_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_RSA_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_RSA_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9313,18 +9313,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_rsa_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_rsa_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_rsa_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_RSA_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_rsa_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_RSA_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_rsa_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_rsa_test_lib.a $(LIBBORINGSSL_RSA_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_rsa_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_rsa_test_lib.a $(LIBBORINGSSL_RSA_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_rsa_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_rsa_test_lib.a
 endif
 
 
@@ -9338,13 +9338,13 @@ endif
 
 
 LIBBORINGSSL_FILE_TEST_GTEST_LIB_SRC = \
-    third_party/boringssl/crypto/test/file_test_gtest.cc \
+    third_party/openssl/crypto/test/file_test_gtest.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_FILE_TEST_GTEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_FILE_TEST_GTEST_LIB_SRC))))
 
-$(LIBBORINGSSL_FILE_TEST_GTEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_FILE_TEST_GTEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_FILE_TEST_GTEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_FILE_TEST_GTEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9352,18 +9352,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_file_test_gtest_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_file_test_gtest_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_file_test_gtest_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_FILE_TEST_GTEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_file_test_gtest_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_FILE_TEST_GTEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_file_test_gtest_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_file_test_gtest_lib.a $(LIBBORINGSSL_FILE_TEST_GTEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_file_test_gtest_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_file_test_gtest_lib.a $(LIBBORINGSSL_FILE_TEST_GTEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_file_test_gtest_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_file_test_gtest_lib.a
 endif
 
 
@@ -9377,13 +9377,13 @@ endif
 
 
 LIBBORINGSSL_GTEST_MAIN_LIB_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_GTEST_MAIN_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_GTEST_MAIN_LIB_SRC))))
 
-$(LIBBORINGSSL_GTEST_MAIN_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_GTEST_MAIN_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_GTEST_MAIN_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_GTEST_MAIN_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9391,18 +9391,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_gtest_main_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_gtest_main_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_gtest_main_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_GTEST_MAIN_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_gtest_main_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_GTEST_MAIN_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_gtest_main_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_gtest_main_lib.a $(LIBBORINGSSL_GTEST_MAIN_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_gtest_main_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_gtest_main_lib.a $(LIBBORINGSSL_GTEST_MAIN_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_gtest_main_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_gtest_main_lib.a
 endif
 
 
@@ -9416,13 +9416,13 @@ endif
 
 
 LIBBORINGSSL_THREAD_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/thread_test.cc \
+    third_party/openssl/crypto/thread_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_THREAD_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_THREAD_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_THREAD_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_THREAD_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_THREAD_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_THREAD_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9430,18 +9430,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_thread_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_thread_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_thread_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_THREAD_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_thread_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_THREAD_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_thread_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_thread_test_lib.a $(LIBBORINGSSL_THREAD_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_thread_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_thread_test_lib.a $(LIBBORINGSSL_THREAD_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_thread_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_thread_test_lib.a
 endif
 
 
@@ -9455,13 +9455,13 @@ endif
 
 
 LIBBORINGSSL_X509_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/x509/x509_test.cc \
+    third_party/openssl/crypto/x509/x509_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_X509_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_X509_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_X509_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_X509_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_X509_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_X509_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9469,18 +9469,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_x509_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_x509_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_x509_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_X509_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_x509_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_X509_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_x509_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_x509_test_lib.a $(LIBBORINGSSL_X509_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_x509_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_x509_test_lib.a $(LIBBORINGSSL_X509_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_x509_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_x509_test_lib.a
 endif
 
 
@@ -9494,13 +9494,13 @@ endif
 
 
 LIBBORINGSSL_TAB_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/x509v3/tab_test.cc \
+    third_party/openssl/crypto/x509v3/tab_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_TAB_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_TAB_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_TAB_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_TAB_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_TAB_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_TAB_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9508,18 +9508,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_tab_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_tab_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_tab_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_TAB_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_tab_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_TAB_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_tab_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_tab_test_lib.a $(LIBBORINGSSL_TAB_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_tab_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_tab_test_lib.a $(LIBBORINGSSL_TAB_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_tab_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_tab_test_lib.a
 endif
 
 
@@ -9533,13 +9533,13 @@ endif
 
 
 LIBBORINGSSL_V3NAME_TEST_LIB_SRC = \
-    third_party/boringssl/crypto/x509v3/v3name_test.cc \
+    third_party/openssl/crypto/x509v3/v3name_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_V3NAME_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_V3NAME_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_V3NAME_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_V3NAME_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_V3NAME_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_V3NAME_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9547,18 +9547,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_v3name_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_v3name_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_v3name_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_V3NAME_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_v3name_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_V3NAME_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_v3name_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_v3name_test_lib.a $(LIBBORINGSSL_V3NAME_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_v3name_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_v3name_test_lib.a $(LIBBORINGSSL_V3NAME_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_v3name_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_v3name_test_lib.a
 endif
 
 
@@ -9572,13 +9572,13 @@ endif
 
 
 LIBBORINGSSL_SPAN_TEST_LIB_SRC = \
-    third_party/boringssl/ssl/span_test.cc \
+    third_party/openssl/ssl/span_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_SPAN_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_SPAN_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_SPAN_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_SPAN_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_SPAN_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_SPAN_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9586,18 +9586,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_span_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_span_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_span_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_SPAN_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_span_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_SPAN_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_span_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_span_test_lib.a $(LIBBORINGSSL_SPAN_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_span_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_span_test_lib.a $(LIBBORINGSSL_SPAN_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_span_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_span_test_lib.a
 endif
 
 
@@ -9611,13 +9611,13 @@ endif
 
 
 LIBBORINGSSL_SSL_TEST_LIB_SRC = \
-    third_party/boringssl/ssl/ssl_test.cc \
+    third_party/openssl/ssl/ssl_test.cc \
 
 PUBLIC_HEADERS_CXX += \
 
 LIBBORINGSSL_SSL_TEST_LIB_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(LIBBORINGSSL_SSL_TEST_LIB_SRC))))
 
-$(LIBBORINGSSL_SSL_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(LIBBORINGSSL_SSL_TEST_LIB_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(LIBBORINGSSL_SSL_TEST_LIB_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(LIBBORINGSSL_SSL_TEST_LIB_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
 
@@ -9625,18 +9625,18 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build a C++ library if you don't have protobuf - a bit overreached, but still okay.
 
-$(LIBDIR)/$(CONFIG)/libboringssl_ssl_test_lib.a: protobuf_dep_error
+$(LIBDIR)/$(CONFIG)/libopenssl_ssl_test_lib.a: protobuf_dep_error
 
 
 else
 
-$(LIBDIR)/$(CONFIG)/libboringssl_ssl_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_SSL_TEST_LIB_OBJS) 
+$(LIBDIR)/$(CONFIG)/libopenssl_ssl_test_lib.a: $(ZLIB_DEP) $(CARES_DEP) $(ADDRESS_SORTING_DEP)  $(PROTOBUF_DEP) $(LIBBORINGSSL_SSL_TEST_LIB_OBJS) 
 	$(E) "[AR]      Creating $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libboringssl_ssl_test_lib.a
-	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libboringssl_ssl_test_lib.a $(LIBBORINGSSL_SSL_TEST_LIB_OBJS) 
+	$(Q) rm -f $(LIBDIR)/$(CONFIG)/libopenssl_ssl_test_lib.a
+	$(Q) $(AR) $(AROPTS) $(LIBDIR)/$(CONFIG)/libopenssl_ssl_test_lib.a $(LIBBORINGSSL_SSL_TEST_LIB_OBJS) 
 ifeq ($(SYSTEM),Darwin)
-	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libboringssl_ssl_test_lib.a
+	$(Q) ranlib -no_warning_for_no_symbols $(LIBDIR)/$(CONFIG)/libopenssl_ssl_test_lib.a
 endif
 
 
@@ -19981,15 +19981,15 @@ endif
 
 
 BORINGSSL_CRYPTO_TEST_DATA_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_CRYPTO_TEST_DATA_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_CRYPTO_TEST_DATA_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_CRYPTO_TEST_DATA_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_CRYPTO_TEST_DATA_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_CRYPTO_TEST_DATA_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_CRYPTO_TEST_DATA_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_CRYPTO_TEST_DATA_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -19997,23 +19997,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_crypto_test_data: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_crypto_test_data: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_crypto_test_data: $(PROTOBUF_DEP) $(BORINGSSL_CRYPTO_TEST_DATA_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_crypto_test_data_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_crypto_test_data: $(PROTOBUF_DEP) $(BORINGSSL_CRYPTO_TEST_DATA_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_crypto_test_data_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_CRYPTO_TEST_DATA_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_crypto_test_data_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_crypto_test_data
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_CRYPTO_TEST_DATA_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_crypto_test_data_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_crypto_test_data
 
 endif
 
-$(BORINGSSL_CRYPTO_TEST_DATA_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_CRYPTO_TEST_DATA_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_CRYPTO_TEST_DATA_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_CRYPTO_TEST_DATA_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_crypto_test_data_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_crypto_test_data_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_crypto_test_data: $(BORINGSSL_CRYPTO_TEST_DATA_OBJS:.o=.dep)
+deps_openssl_crypto_test_data: $(BORINGSSL_CRYPTO_TEST_DATA_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_CRYPTO_TEST_DATA_OBJS:.o=.dep)
@@ -20021,15 +20021,15 @@ endif
 
 
 BORINGSSL_ASN1_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_ASN1_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_ASN1_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_ASN1_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_ASN1_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_ASN1_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_ASN1_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_ASN1_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20037,23 +20037,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_asn1_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_asn1_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_asn1_test: $(PROTOBUF_DEP) $(BORINGSSL_ASN1_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_asn1_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_asn1_test: $(PROTOBUF_DEP) $(BORINGSSL_ASN1_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_asn1_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_ASN1_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_asn1_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_asn1_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_ASN1_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_asn1_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_asn1_test
 
 endif
 
-$(BORINGSSL_ASN1_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_ASN1_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_ASN1_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_ASN1_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_asn1_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_asn1_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_asn1_test: $(BORINGSSL_ASN1_TEST_OBJS:.o=.dep)
+deps_openssl_asn1_test: $(BORINGSSL_ASN1_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_ASN1_TEST_OBJS:.o=.dep)
@@ -20061,15 +20061,15 @@ endif
 
 
 BORINGSSL_BASE64_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_BASE64_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_BASE64_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_BASE64_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_BASE64_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_BASE64_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_BASE64_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_BASE64_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20077,23 +20077,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_base64_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_base64_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_base64_test: $(PROTOBUF_DEP) $(BORINGSSL_BASE64_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_base64_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_base64_test: $(PROTOBUF_DEP) $(BORINGSSL_BASE64_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_base64_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_BASE64_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_base64_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_base64_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_BASE64_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_base64_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_base64_test
 
 endif
 
-$(BORINGSSL_BASE64_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_BASE64_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_BASE64_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_BASE64_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_base64_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_base64_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_base64_test: $(BORINGSSL_BASE64_TEST_OBJS:.o=.dep)
+deps_openssl_base64_test: $(BORINGSSL_BASE64_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_BASE64_TEST_OBJS:.o=.dep)
@@ -20101,15 +20101,15 @@ endif
 
 
 BORINGSSL_BIO_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_BIO_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_BIO_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_BIO_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_BIO_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_BIO_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_BIO_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_BIO_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20117,23 +20117,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_bio_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_bio_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_bio_test: $(PROTOBUF_DEP) $(BORINGSSL_BIO_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_bio_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_bio_test: $(PROTOBUF_DEP) $(BORINGSSL_BIO_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_bio_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_BIO_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_bio_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_bio_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_BIO_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_bio_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_bio_test
 
 endif
 
-$(BORINGSSL_BIO_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_BIO_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_BIO_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_BIO_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_bio_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_bio_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_bio_test: $(BORINGSSL_BIO_TEST_OBJS:.o=.dep)
+deps_openssl_bio_test: $(BORINGSSL_BIO_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_BIO_TEST_OBJS:.o=.dep)
@@ -20141,15 +20141,15 @@ endif
 
 
 BORINGSSL_BUF_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_BUF_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_BUF_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_BUF_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_BUF_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_BUF_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_BUF_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_BUF_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20157,23 +20157,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_buf_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_buf_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_buf_test: $(PROTOBUF_DEP) $(BORINGSSL_BUF_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_buf_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_buf_test: $(PROTOBUF_DEP) $(BORINGSSL_BUF_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_buf_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_BUF_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_buf_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_buf_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_BUF_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_buf_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_buf_test
 
 endif
 
-$(BORINGSSL_BUF_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_BUF_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_BUF_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_BUF_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_buf_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_buf_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_buf_test: $(BORINGSSL_BUF_TEST_OBJS:.o=.dep)
+deps_openssl_buf_test: $(BORINGSSL_BUF_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_BUF_TEST_OBJS:.o=.dep)
@@ -20181,15 +20181,15 @@ endif
 
 
 BORINGSSL_BYTESTRING_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_BYTESTRING_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_BYTESTRING_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_BYTESTRING_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_BYTESTRING_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_BYTESTRING_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_BYTESTRING_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_BYTESTRING_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20197,23 +20197,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_bytestring_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_bytestring_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_bytestring_test: $(PROTOBUF_DEP) $(BORINGSSL_BYTESTRING_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_bytestring_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_bytestring_test: $(PROTOBUF_DEP) $(BORINGSSL_BYTESTRING_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_bytestring_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_BYTESTRING_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_bytestring_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_bytestring_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_BYTESTRING_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_bytestring_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_bytestring_test
 
 endif
 
-$(BORINGSSL_BYTESTRING_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_BYTESTRING_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_BYTESTRING_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_BYTESTRING_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_bytestring_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_bytestring_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_bytestring_test: $(BORINGSSL_BYTESTRING_TEST_OBJS:.o=.dep)
+deps_openssl_bytestring_test: $(BORINGSSL_BYTESTRING_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_BYTESTRING_TEST_OBJS:.o=.dep)
@@ -20221,15 +20221,15 @@ endif
 
 
 BORINGSSL_CHACHA_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_CHACHA_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_CHACHA_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_CHACHA_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_CHACHA_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_CHACHA_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_CHACHA_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_CHACHA_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20237,23 +20237,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_chacha_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_chacha_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_chacha_test: $(PROTOBUF_DEP) $(BORINGSSL_CHACHA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_chacha_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_chacha_test: $(PROTOBUF_DEP) $(BORINGSSL_CHACHA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_chacha_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_CHACHA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_chacha_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_chacha_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_CHACHA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_chacha_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_chacha_test
 
 endif
 
-$(BORINGSSL_CHACHA_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_CHACHA_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_CHACHA_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_CHACHA_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_chacha_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_chacha_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_chacha_test: $(BORINGSSL_CHACHA_TEST_OBJS:.o=.dep)
+deps_openssl_chacha_test: $(BORINGSSL_CHACHA_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_CHACHA_TEST_OBJS:.o=.dep)
@@ -20261,15 +20261,15 @@ endif
 
 
 BORINGSSL_AEAD_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_AEAD_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_AEAD_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_AEAD_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_AEAD_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_AEAD_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_AEAD_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_AEAD_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20277,23 +20277,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_aead_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_aead_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_aead_test: $(PROTOBUF_DEP) $(BORINGSSL_AEAD_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_aead_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_aead_test: $(PROTOBUF_DEP) $(BORINGSSL_AEAD_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_aead_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_AEAD_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_aead_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_aead_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_AEAD_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_aead_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_aead_test
 
 endif
 
-$(BORINGSSL_AEAD_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_AEAD_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_AEAD_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_AEAD_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_aead_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_aead_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_aead_test: $(BORINGSSL_AEAD_TEST_OBJS:.o=.dep)
+deps_openssl_aead_test: $(BORINGSSL_AEAD_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_AEAD_TEST_OBJS:.o=.dep)
@@ -20301,15 +20301,15 @@ endif
 
 
 BORINGSSL_CIPHER_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_CIPHER_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_CIPHER_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_CIPHER_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_CIPHER_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_CIPHER_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_CIPHER_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_CIPHER_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20317,23 +20317,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_cipher_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_cipher_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_cipher_test: $(PROTOBUF_DEP) $(BORINGSSL_CIPHER_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_cipher_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_cipher_test: $(PROTOBUF_DEP) $(BORINGSSL_CIPHER_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_cipher_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_CIPHER_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_cipher_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_cipher_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_CIPHER_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_cipher_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_cipher_test
 
 endif
 
-$(BORINGSSL_CIPHER_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_CIPHER_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_CIPHER_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_CIPHER_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_cipher_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_cipher_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_cipher_test: $(BORINGSSL_CIPHER_TEST_OBJS:.o=.dep)
+deps_openssl_cipher_test: $(BORINGSSL_CIPHER_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_CIPHER_TEST_OBJS:.o=.dep)
@@ -20341,15 +20341,15 @@ endif
 
 
 BORINGSSL_CMAC_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_CMAC_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_CMAC_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_CMAC_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_CMAC_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_CMAC_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_CMAC_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_CMAC_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20357,23 +20357,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_cmac_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_cmac_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_cmac_test: $(PROTOBUF_DEP) $(BORINGSSL_CMAC_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_cmac_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_cmac_test: $(PROTOBUF_DEP) $(BORINGSSL_CMAC_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_cmac_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_CMAC_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_cmac_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_cmac_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_CMAC_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_cmac_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_cmac_test
 
 endif
 
-$(BORINGSSL_CMAC_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_CMAC_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_CMAC_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_CMAC_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_cmac_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_cmac_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_cmac_test: $(BORINGSSL_CMAC_TEST_OBJS:.o=.dep)
+deps_openssl_cmac_test: $(BORINGSSL_CMAC_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_CMAC_TEST_OBJS:.o=.dep)
@@ -20381,15 +20381,15 @@ endif
 
 
 BORINGSSL_COMPILER_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_COMPILER_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_COMPILER_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_COMPILER_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_COMPILER_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_COMPILER_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_COMPILER_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_COMPILER_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20397,23 +20397,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_compiler_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_compiler_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_compiler_test: $(PROTOBUF_DEP) $(BORINGSSL_COMPILER_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_compiler_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_compiler_test: $(PROTOBUF_DEP) $(BORINGSSL_COMPILER_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_compiler_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_COMPILER_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_compiler_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_compiler_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_COMPILER_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_compiler_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_compiler_test
 
 endif
 
-$(BORINGSSL_COMPILER_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_COMPILER_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_COMPILER_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_COMPILER_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_compiler_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_compiler_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_compiler_test: $(BORINGSSL_COMPILER_TEST_OBJS:.o=.dep)
+deps_openssl_compiler_test: $(BORINGSSL_COMPILER_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_COMPILER_TEST_OBJS:.o=.dep)
@@ -20421,15 +20421,15 @@ endif
 
 
 BORINGSSL_CONSTANT_TIME_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_CONSTANT_TIME_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_CONSTANT_TIME_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_CONSTANT_TIME_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_CONSTANT_TIME_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_CONSTANT_TIME_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_CONSTANT_TIME_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_CONSTANT_TIME_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20437,23 +20437,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_constant_time_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_constant_time_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_constant_time_test: $(PROTOBUF_DEP) $(BORINGSSL_CONSTANT_TIME_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_constant_time_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_constant_time_test: $(PROTOBUF_DEP) $(BORINGSSL_CONSTANT_TIME_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_constant_time_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_CONSTANT_TIME_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_constant_time_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_constant_time_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_CONSTANT_TIME_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_constant_time_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_constant_time_test
 
 endif
 
-$(BORINGSSL_CONSTANT_TIME_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_CONSTANT_TIME_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_CONSTANT_TIME_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_CONSTANT_TIME_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_constant_time_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_constant_time_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_constant_time_test: $(BORINGSSL_CONSTANT_TIME_TEST_OBJS:.o=.dep)
+deps_openssl_constant_time_test: $(BORINGSSL_CONSTANT_TIME_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_CONSTANT_TIME_TEST_OBJS:.o=.dep)
@@ -20461,15 +20461,15 @@ endif
 
 
 BORINGSSL_ED25519_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_ED25519_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_ED25519_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_ED25519_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_ED25519_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_ED25519_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_ED25519_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_ED25519_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20477,23 +20477,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_ed25519_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_ed25519_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_ed25519_test: $(PROTOBUF_DEP) $(BORINGSSL_ED25519_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_ed25519_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_ed25519_test: $(PROTOBUF_DEP) $(BORINGSSL_ED25519_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_ed25519_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_ED25519_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_ed25519_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_ed25519_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_ED25519_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_ed25519_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_ed25519_test
 
 endif
 
-$(BORINGSSL_ED25519_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_ED25519_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_ED25519_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_ED25519_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_ed25519_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_ed25519_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_ed25519_test: $(BORINGSSL_ED25519_TEST_OBJS:.o=.dep)
+deps_openssl_ed25519_test: $(BORINGSSL_ED25519_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_ED25519_TEST_OBJS:.o=.dep)
@@ -20501,15 +20501,15 @@ endif
 
 
 BORINGSSL_SPAKE25519_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_SPAKE25519_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_SPAKE25519_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_SPAKE25519_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_SPAKE25519_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_SPAKE25519_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_SPAKE25519_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_SPAKE25519_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20517,23 +20517,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_spake25519_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_spake25519_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_spake25519_test: $(PROTOBUF_DEP) $(BORINGSSL_SPAKE25519_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_spake25519_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_spake25519_test: $(PROTOBUF_DEP) $(BORINGSSL_SPAKE25519_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_spake25519_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_SPAKE25519_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_spake25519_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_spake25519_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_SPAKE25519_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_spake25519_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_spake25519_test
 
 endif
 
-$(BORINGSSL_SPAKE25519_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_SPAKE25519_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_SPAKE25519_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_SPAKE25519_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_spake25519_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_spake25519_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_spake25519_test: $(BORINGSSL_SPAKE25519_TEST_OBJS:.o=.dep)
+deps_openssl_spake25519_test: $(BORINGSSL_SPAKE25519_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_SPAKE25519_TEST_OBJS:.o=.dep)
@@ -20541,15 +20541,15 @@ endif
 
 
 BORINGSSL_X25519_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_X25519_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_X25519_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_X25519_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_X25519_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_X25519_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_X25519_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_X25519_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20557,23 +20557,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_x25519_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_x25519_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_x25519_test: $(PROTOBUF_DEP) $(BORINGSSL_X25519_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_x25519_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_x25519_test: $(PROTOBUF_DEP) $(BORINGSSL_X25519_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_x25519_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_X25519_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_x25519_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_x25519_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_X25519_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_x25519_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_x25519_test
 
 endif
 
-$(BORINGSSL_X25519_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_X25519_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_X25519_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_X25519_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_x25519_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_x25519_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_x25519_test: $(BORINGSSL_X25519_TEST_OBJS:.o=.dep)
+deps_openssl_x25519_test: $(BORINGSSL_X25519_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_X25519_TEST_OBJS:.o=.dep)
@@ -20581,15 +20581,15 @@ endif
 
 
 BORINGSSL_DH_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_DH_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_DH_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_DH_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_DH_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_DH_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_DH_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_DH_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20597,23 +20597,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_dh_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_dh_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_dh_test: $(PROTOBUF_DEP) $(BORINGSSL_DH_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_dh_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_dh_test: $(PROTOBUF_DEP) $(BORINGSSL_DH_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_dh_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_DH_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_dh_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_dh_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_DH_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_dh_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_dh_test
 
 endif
 
-$(BORINGSSL_DH_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_DH_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_DH_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_DH_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_dh_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_dh_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_dh_test: $(BORINGSSL_DH_TEST_OBJS:.o=.dep)
+deps_openssl_dh_test: $(BORINGSSL_DH_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_DH_TEST_OBJS:.o=.dep)
@@ -20621,15 +20621,15 @@ endif
 
 
 BORINGSSL_DIGEST_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_DIGEST_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_DIGEST_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_DIGEST_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_DIGEST_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_DIGEST_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_DIGEST_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_DIGEST_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20637,23 +20637,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_digest_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_digest_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_digest_test: $(PROTOBUF_DEP) $(BORINGSSL_DIGEST_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_digest_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_digest_test: $(PROTOBUF_DEP) $(BORINGSSL_DIGEST_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_digest_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_DIGEST_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_digest_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_digest_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_DIGEST_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_digest_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_digest_test
 
 endif
 
-$(BORINGSSL_DIGEST_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_DIGEST_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_DIGEST_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_DIGEST_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_digest_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_digest_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_digest_test: $(BORINGSSL_DIGEST_TEST_OBJS:.o=.dep)
+deps_openssl_digest_test: $(BORINGSSL_DIGEST_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_DIGEST_TEST_OBJS:.o=.dep)
@@ -20661,15 +20661,15 @@ endif
 
 
 BORINGSSL_DSA_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_DSA_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_DSA_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_DSA_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_DSA_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_DSA_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_DSA_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_DSA_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20677,23 +20677,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_dsa_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_dsa_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_dsa_test: $(PROTOBUF_DEP) $(BORINGSSL_DSA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_dsa_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_dsa_test: $(PROTOBUF_DEP) $(BORINGSSL_DSA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_dsa_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_DSA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_dsa_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_dsa_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_DSA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_dsa_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_dsa_test
 
 endif
 
-$(BORINGSSL_DSA_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_DSA_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_DSA_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_DSA_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_dsa_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_dsa_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_dsa_test: $(BORINGSSL_DSA_TEST_OBJS:.o=.dep)
+deps_openssl_dsa_test: $(BORINGSSL_DSA_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_DSA_TEST_OBJS:.o=.dep)
@@ -20701,15 +20701,15 @@ endif
 
 
 BORINGSSL_ECDH_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_ECDH_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_ECDH_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_ECDH_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_ECDH_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_ECDH_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_ECDH_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_ECDH_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20717,23 +20717,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_ecdh_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_ecdh_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_ecdh_test: $(PROTOBUF_DEP) $(BORINGSSL_ECDH_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_ecdh_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_ecdh_test: $(PROTOBUF_DEP) $(BORINGSSL_ECDH_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_ecdh_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_ECDH_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_ecdh_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_ecdh_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_ECDH_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_ecdh_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_ecdh_test
 
 endif
 
-$(BORINGSSL_ECDH_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_ECDH_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_ECDH_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_ECDH_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_ecdh_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_ecdh_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_ecdh_test: $(BORINGSSL_ECDH_TEST_OBJS:.o=.dep)
+deps_openssl_ecdh_test: $(BORINGSSL_ECDH_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_ECDH_TEST_OBJS:.o=.dep)
@@ -20741,15 +20741,15 @@ endif
 
 
 BORINGSSL_ERR_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_ERR_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_ERR_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_ERR_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_ERR_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_ERR_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_ERR_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_ERR_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20757,23 +20757,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_err_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_err_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_err_test: $(PROTOBUF_DEP) $(BORINGSSL_ERR_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_err_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_err_test: $(PROTOBUF_DEP) $(BORINGSSL_ERR_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_err_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_ERR_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_err_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_err_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_ERR_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_err_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_err_test
 
 endif
 
-$(BORINGSSL_ERR_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_ERR_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_ERR_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_ERR_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_err_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_err_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_err_test: $(BORINGSSL_ERR_TEST_OBJS:.o=.dep)
+deps_openssl_err_test: $(BORINGSSL_ERR_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_ERR_TEST_OBJS:.o=.dep)
@@ -20781,15 +20781,15 @@ endif
 
 
 BORINGSSL_EVP_EXTRA_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_EVP_EXTRA_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_EVP_EXTRA_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_EVP_EXTRA_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_EVP_EXTRA_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_EVP_EXTRA_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_EVP_EXTRA_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_EVP_EXTRA_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20797,23 +20797,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_evp_extra_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_evp_extra_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_evp_extra_test: $(PROTOBUF_DEP) $(BORINGSSL_EVP_EXTRA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_evp_extra_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_evp_extra_test: $(PROTOBUF_DEP) $(BORINGSSL_EVP_EXTRA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_evp_extra_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_EVP_EXTRA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_evp_extra_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_evp_extra_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_EVP_EXTRA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_evp_extra_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_evp_extra_test
 
 endif
 
-$(BORINGSSL_EVP_EXTRA_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_EVP_EXTRA_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_EVP_EXTRA_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_EVP_EXTRA_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_evp_extra_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_evp_extra_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_evp_extra_test: $(BORINGSSL_EVP_EXTRA_TEST_OBJS:.o=.dep)
+deps_openssl_evp_extra_test: $(BORINGSSL_EVP_EXTRA_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_EVP_EXTRA_TEST_OBJS:.o=.dep)
@@ -20821,15 +20821,15 @@ endif
 
 
 BORINGSSL_EVP_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_EVP_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_EVP_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_EVP_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_EVP_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_EVP_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_EVP_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_EVP_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20837,23 +20837,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_evp_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_evp_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_evp_test: $(PROTOBUF_DEP) $(BORINGSSL_EVP_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_evp_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_evp_test: $(PROTOBUF_DEP) $(BORINGSSL_EVP_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_evp_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_EVP_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_evp_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_evp_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_EVP_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_evp_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_evp_test
 
 endif
 
-$(BORINGSSL_EVP_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_EVP_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_EVP_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_EVP_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_evp_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_evp_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_evp_test: $(BORINGSSL_EVP_TEST_OBJS:.o=.dep)
+deps_openssl_evp_test: $(BORINGSSL_EVP_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_EVP_TEST_OBJS:.o=.dep)
@@ -20861,15 +20861,15 @@ endif
 
 
 BORINGSSL_PBKDF_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_PBKDF_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_PBKDF_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_PBKDF_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_PBKDF_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_PBKDF_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_PBKDF_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_PBKDF_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20877,23 +20877,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_pbkdf_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_pbkdf_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_pbkdf_test: $(PROTOBUF_DEP) $(BORINGSSL_PBKDF_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_pbkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_pbkdf_test: $(PROTOBUF_DEP) $(BORINGSSL_PBKDF_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_pbkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_PBKDF_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_pbkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_pbkdf_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_PBKDF_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_pbkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_pbkdf_test
 
 endif
 
-$(BORINGSSL_PBKDF_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_PBKDF_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_PBKDF_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_PBKDF_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_pbkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_pbkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_pbkdf_test: $(BORINGSSL_PBKDF_TEST_OBJS:.o=.dep)
+deps_openssl_pbkdf_test: $(BORINGSSL_PBKDF_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_PBKDF_TEST_OBJS:.o=.dep)
@@ -20901,15 +20901,15 @@ endif
 
 
 BORINGSSL_SCRYPT_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_SCRYPT_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_SCRYPT_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_SCRYPT_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_SCRYPT_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_SCRYPT_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_SCRYPT_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_SCRYPT_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20917,23 +20917,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_scrypt_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_scrypt_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_scrypt_test: $(PROTOBUF_DEP) $(BORINGSSL_SCRYPT_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_scrypt_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_scrypt_test: $(PROTOBUF_DEP) $(BORINGSSL_SCRYPT_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_scrypt_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_SCRYPT_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_scrypt_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_scrypt_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_SCRYPT_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_scrypt_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_scrypt_test
 
 endif
 
-$(BORINGSSL_SCRYPT_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_SCRYPT_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_SCRYPT_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_SCRYPT_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_scrypt_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_scrypt_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_scrypt_test: $(BORINGSSL_SCRYPT_TEST_OBJS:.o=.dep)
+deps_openssl_scrypt_test: $(BORINGSSL_SCRYPT_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_SCRYPT_TEST_OBJS:.o=.dep)
@@ -20941,15 +20941,15 @@ endif
 
 
 BORINGSSL_AES_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_AES_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_AES_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_AES_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_AES_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_AES_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_AES_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_AES_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20957,23 +20957,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_aes_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_aes_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_aes_test: $(PROTOBUF_DEP) $(BORINGSSL_AES_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_aes_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_aes_test: $(PROTOBUF_DEP) $(BORINGSSL_AES_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_aes_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_AES_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_aes_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_aes_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_AES_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_aes_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_aes_test
 
 endif
 
-$(BORINGSSL_AES_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_AES_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_AES_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_AES_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_aes_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_aes_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_aes_test: $(BORINGSSL_AES_TEST_OBJS:.o=.dep)
+deps_openssl_aes_test: $(BORINGSSL_AES_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_AES_TEST_OBJS:.o=.dep)
@@ -20981,15 +20981,15 @@ endif
 
 
 BORINGSSL_BN_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_BN_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_BN_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_BN_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_BN_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_BN_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_BN_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_BN_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -20997,23 +20997,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_bn_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_bn_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_bn_test: $(PROTOBUF_DEP) $(BORINGSSL_BN_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_bn_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_bn_test: $(PROTOBUF_DEP) $(BORINGSSL_BN_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_bn_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_BN_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_bn_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_bn_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_BN_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_bn_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_bn_test
 
 endif
 
-$(BORINGSSL_BN_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_BN_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_BN_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_BN_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_bn_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_bn_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_bn_test: $(BORINGSSL_BN_TEST_OBJS:.o=.dep)
+deps_openssl_bn_test: $(BORINGSSL_BN_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_BN_TEST_OBJS:.o=.dep)
@@ -21021,15 +21021,15 @@ endif
 
 
 BORINGSSL_EC_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_EC_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_EC_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_EC_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_EC_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_EC_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_EC_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_EC_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21037,23 +21037,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_ec_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_ec_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_ec_test: $(PROTOBUF_DEP) $(BORINGSSL_EC_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_ec_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_ec_test: $(PROTOBUF_DEP) $(BORINGSSL_EC_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_ec_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_EC_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_ec_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_ec_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_EC_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_ec_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_ec_test
 
 endif
 
-$(BORINGSSL_EC_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_EC_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_EC_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_EC_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_ec_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_ec_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_ec_test: $(BORINGSSL_EC_TEST_OBJS:.o=.dep)
+deps_openssl_ec_test: $(BORINGSSL_EC_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_EC_TEST_OBJS:.o=.dep)
@@ -21061,15 +21061,15 @@ endif
 
 
 BORINGSSL_P256-X86_64_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_P256-X86_64_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_P256-X86_64_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_P256-X86_64_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_P256-X86_64_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_P256-X86_64_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_P256-X86_64_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_P256-X86_64_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21077,23 +21077,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_p256-x86_64_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_p256-x86_64_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_p256-x86_64_test: $(PROTOBUF_DEP) $(BORINGSSL_P256-X86_64_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_p256-x86_64_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_p256-x86_64_test: $(PROTOBUF_DEP) $(BORINGSSL_P256-X86_64_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_p256-x86_64_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_P256-X86_64_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_p256-x86_64_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_p256-x86_64_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_P256-X86_64_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_p256-x86_64_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_p256-x86_64_test
 
 endif
 
-$(BORINGSSL_P256-X86_64_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_P256-X86_64_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_P256-X86_64_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_P256-X86_64_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_p256-x86_64_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_p256-x86_64_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_p256-x86_64_test: $(BORINGSSL_P256-X86_64_TEST_OBJS:.o=.dep)
+deps_openssl_p256-x86_64_test: $(BORINGSSL_P256-X86_64_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_P256-X86_64_TEST_OBJS:.o=.dep)
@@ -21101,15 +21101,15 @@ endif
 
 
 BORINGSSL_ECDSA_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_ECDSA_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_ECDSA_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_ECDSA_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_ECDSA_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_ECDSA_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_ECDSA_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_ECDSA_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21117,23 +21117,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_ecdsa_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_ecdsa_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_ecdsa_test: $(PROTOBUF_DEP) $(BORINGSSL_ECDSA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_ecdsa_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_ecdsa_test: $(PROTOBUF_DEP) $(BORINGSSL_ECDSA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_ecdsa_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_ECDSA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_ecdsa_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_ecdsa_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_ECDSA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_ecdsa_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_ecdsa_test
 
 endif
 
-$(BORINGSSL_ECDSA_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_ECDSA_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_ECDSA_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_ECDSA_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_ecdsa_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_ecdsa_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_ecdsa_test: $(BORINGSSL_ECDSA_TEST_OBJS:.o=.dep)
+deps_openssl_ecdsa_test: $(BORINGSSL_ECDSA_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_ECDSA_TEST_OBJS:.o=.dep)
@@ -21141,15 +21141,15 @@ endif
 
 
 BORINGSSL_GCM_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_GCM_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_GCM_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_GCM_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_GCM_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_GCM_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_GCM_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_GCM_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21157,23 +21157,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_gcm_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_gcm_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_gcm_test: $(PROTOBUF_DEP) $(BORINGSSL_GCM_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_gcm_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_gcm_test: $(PROTOBUF_DEP) $(BORINGSSL_GCM_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_gcm_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_GCM_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_gcm_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_gcm_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_GCM_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_gcm_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_gcm_test
 
 endif
 
-$(BORINGSSL_GCM_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_GCM_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_GCM_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_GCM_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_gcm_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_gcm_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_gcm_test: $(BORINGSSL_GCM_TEST_OBJS:.o=.dep)
+deps_openssl_gcm_test: $(BORINGSSL_GCM_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_GCM_TEST_OBJS:.o=.dep)
@@ -21181,15 +21181,15 @@ endif
 
 
 BORINGSSL_CTRDRBG_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_CTRDRBG_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_CTRDRBG_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_CTRDRBG_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_CTRDRBG_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_CTRDRBG_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_CTRDRBG_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_CTRDRBG_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21197,23 +21197,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_ctrdrbg_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_ctrdrbg_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_ctrdrbg_test: $(PROTOBUF_DEP) $(BORINGSSL_CTRDRBG_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_ctrdrbg_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_ctrdrbg_test: $(PROTOBUF_DEP) $(BORINGSSL_CTRDRBG_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_ctrdrbg_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_CTRDRBG_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_ctrdrbg_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_ctrdrbg_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_CTRDRBG_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_ctrdrbg_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_ctrdrbg_test
 
 endif
 
-$(BORINGSSL_CTRDRBG_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_CTRDRBG_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_CTRDRBG_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_CTRDRBG_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_ctrdrbg_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_ctrdrbg_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_ctrdrbg_test: $(BORINGSSL_CTRDRBG_TEST_OBJS:.o=.dep)
+deps_openssl_ctrdrbg_test: $(BORINGSSL_CTRDRBG_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_CTRDRBG_TEST_OBJS:.o=.dep)
@@ -21221,15 +21221,15 @@ endif
 
 
 BORINGSSL_HKDF_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_HKDF_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_HKDF_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_HKDF_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_HKDF_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_HKDF_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_HKDF_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_HKDF_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21237,23 +21237,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_hkdf_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_hkdf_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_hkdf_test: $(PROTOBUF_DEP) $(BORINGSSL_HKDF_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_hkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_hkdf_test: $(PROTOBUF_DEP) $(BORINGSSL_HKDF_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_hkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_HKDF_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_hkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_hkdf_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_HKDF_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_hkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_hkdf_test
 
 endif
 
-$(BORINGSSL_HKDF_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_HKDF_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_HKDF_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_HKDF_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_hkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_hkdf_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_hkdf_test: $(BORINGSSL_HKDF_TEST_OBJS:.o=.dep)
+deps_openssl_hkdf_test: $(BORINGSSL_HKDF_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_HKDF_TEST_OBJS:.o=.dep)
@@ -21261,15 +21261,15 @@ endif
 
 
 BORINGSSL_HMAC_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_HMAC_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_HMAC_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_HMAC_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_HMAC_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_HMAC_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_HMAC_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_HMAC_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21277,23 +21277,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_hmac_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_hmac_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_hmac_test: $(PROTOBUF_DEP) $(BORINGSSL_HMAC_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_hmac_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_hmac_test: $(PROTOBUF_DEP) $(BORINGSSL_HMAC_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_hmac_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_HMAC_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_hmac_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_hmac_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_HMAC_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_hmac_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_hmac_test
 
 endif
 
-$(BORINGSSL_HMAC_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_HMAC_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_HMAC_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_HMAC_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_hmac_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_hmac_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_hmac_test: $(BORINGSSL_HMAC_TEST_OBJS:.o=.dep)
+deps_openssl_hmac_test: $(BORINGSSL_HMAC_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_HMAC_TEST_OBJS:.o=.dep)
@@ -21301,15 +21301,15 @@ endif
 
 
 BORINGSSL_LHASH_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_LHASH_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_LHASH_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_LHASH_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_LHASH_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_LHASH_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_LHASH_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_LHASH_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21317,23 +21317,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_lhash_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_lhash_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_lhash_test: $(PROTOBUF_DEP) $(BORINGSSL_LHASH_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_lhash_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_lhash_test: $(PROTOBUF_DEP) $(BORINGSSL_LHASH_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_lhash_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_LHASH_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_lhash_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_lhash_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_LHASH_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_lhash_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_lhash_test
 
 endif
 
-$(BORINGSSL_LHASH_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_LHASH_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_LHASH_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_LHASH_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_lhash_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_lhash_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_lhash_test: $(BORINGSSL_LHASH_TEST_OBJS:.o=.dep)
+deps_openssl_lhash_test: $(BORINGSSL_LHASH_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_LHASH_TEST_OBJS:.o=.dep)
@@ -21341,15 +21341,15 @@ endif
 
 
 BORINGSSL_OBJ_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_OBJ_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_OBJ_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_OBJ_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_OBJ_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_OBJ_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_OBJ_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_OBJ_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21357,23 +21357,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_obj_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_obj_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_obj_test: $(PROTOBUF_DEP) $(BORINGSSL_OBJ_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_obj_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_obj_test: $(PROTOBUF_DEP) $(BORINGSSL_OBJ_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_obj_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_OBJ_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_obj_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_obj_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_OBJ_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_obj_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_obj_test
 
 endif
 
-$(BORINGSSL_OBJ_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_OBJ_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_OBJ_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_OBJ_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_obj_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_obj_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_obj_test: $(BORINGSSL_OBJ_TEST_OBJS:.o=.dep)
+deps_openssl_obj_test: $(BORINGSSL_OBJ_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_OBJ_TEST_OBJS:.o=.dep)
@@ -21381,15 +21381,15 @@ endif
 
 
 BORINGSSL_PKCS7_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_PKCS7_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_PKCS7_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_PKCS7_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_PKCS7_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_PKCS7_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_PKCS7_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_PKCS7_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21397,23 +21397,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_pkcs7_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_pkcs7_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_pkcs7_test: $(PROTOBUF_DEP) $(BORINGSSL_PKCS7_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_pkcs7_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_pkcs7_test: $(PROTOBUF_DEP) $(BORINGSSL_PKCS7_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_pkcs7_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_PKCS7_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_pkcs7_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_pkcs7_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_PKCS7_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_pkcs7_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_pkcs7_test
 
 endif
 
-$(BORINGSSL_PKCS7_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_PKCS7_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_PKCS7_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_PKCS7_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_pkcs7_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_pkcs7_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_pkcs7_test: $(BORINGSSL_PKCS7_TEST_OBJS:.o=.dep)
+deps_openssl_pkcs7_test: $(BORINGSSL_PKCS7_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_PKCS7_TEST_OBJS:.o=.dep)
@@ -21421,15 +21421,15 @@ endif
 
 
 BORINGSSL_PKCS12_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_PKCS12_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_PKCS12_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_PKCS12_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_PKCS12_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_PKCS12_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_PKCS12_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_PKCS12_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21437,23 +21437,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_pkcs12_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_pkcs12_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_pkcs12_test: $(PROTOBUF_DEP) $(BORINGSSL_PKCS12_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_pkcs12_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_pkcs12_test: $(PROTOBUF_DEP) $(BORINGSSL_PKCS12_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_pkcs12_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_PKCS12_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_pkcs12_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_pkcs12_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_PKCS12_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_pkcs12_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_pkcs12_test
 
 endif
 
-$(BORINGSSL_PKCS12_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_PKCS12_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_PKCS12_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_PKCS12_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_pkcs12_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_pkcs12_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_pkcs12_test: $(BORINGSSL_PKCS12_TEST_OBJS:.o=.dep)
+deps_openssl_pkcs12_test: $(BORINGSSL_PKCS12_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_PKCS12_TEST_OBJS:.o=.dep)
@@ -21461,15 +21461,15 @@ endif
 
 
 BORINGSSL_PKCS8_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_PKCS8_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_PKCS8_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_PKCS8_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_PKCS8_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_PKCS8_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_PKCS8_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_PKCS8_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21477,23 +21477,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_pkcs8_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_pkcs8_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_pkcs8_test: $(PROTOBUF_DEP) $(BORINGSSL_PKCS8_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_pkcs8_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_pkcs8_test: $(PROTOBUF_DEP) $(BORINGSSL_PKCS8_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_pkcs8_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_PKCS8_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_pkcs8_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_pkcs8_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_PKCS8_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_pkcs8_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_pkcs8_test
 
 endif
 
-$(BORINGSSL_PKCS8_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_PKCS8_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_PKCS8_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_PKCS8_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_pkcs8_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_pkcs8_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_pkcs8_test: $(BORINGSSL_PKCS8_TEST_OBJS:.o=.dep)
+deps_openssl_pkcs8_test: $(BORINGSSL_PKCS8_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_PKCS8_TEST_OBJS:.o=.dep)
@@ -21501,15 +21501,15 @@ endif
 
 
 BORINGSSL_POLY1305_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_POLY1305_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_POLY1305_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_POLY1305_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_POLY1305_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_POLY1305_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_POLY1305_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_POLY1305_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21517,23 +21517,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_poly1305_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_poly1305_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_poly1305_test: $(PROTOBUF_DEP) $(BORINGSSL_POLY1305_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_poly1305_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_poly1305_test: $(PROTOBUF_DEP) $(BORINGSSL_POLY1305_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_poly1305_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_POLY1305_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_poly1305_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_poly1305_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_POLY1305_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_poly1305_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_poly1305_test
 
 endif
 
-$(BORINGSSL_POLY1305_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_POLY1305_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_POLY1305_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_POLY1305_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_poly1305_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_poly1305_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_poly1305_test: $(BORINGSSL_POLY1305_TEST_OBJS:.o=.dep)
+deps_openssl_poly1305_test: $(BORINGSSL_POLY1305_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_POLY1305_TEST_OBJS:.o=.dep)
@@ -21541,15 +21541,15 @@ endif
 
 
 BORINGSSL_POOL_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_POOL_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_POOL_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_POOL_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_POOL_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_POOL_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_POOL_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_POOL_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21557,23 +21557,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_pool_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_pool_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_pool_test: $(PROTOBUF_DEP) $(BORINGSSL_POOL_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_pool_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_pool_test: $(PROTOBUF_DEP) $(BORINGSSL_POOL_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_pool_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_POOL_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_pool_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_pool_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_POOL_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_pool_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_pool_test
 
 endif
 
-$(BORINGSSL_POOL_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_POOL_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_POOL_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_POOL_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_pool_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_pool_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_pool_test: $(BORINGSSL_POOL_TEST_OBJS:.o=.dep)
+deps_openssl_pool_test: $(BORINGSSL_POOL_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_POOL_TEST_OBJS:.o=.dep)
@@ -21581,15 +21581,15 @@ endif
 
 
 BORINGSSL_REFCOUNT_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_REFCOUNT_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_REFCOUNT_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_REFCOUNT_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_REFCOUNT_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_REFCOUNT_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_REFCOUNT_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_REFCOUNT_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21597,23 +21597,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_refcount_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_refcount_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_refcount_test: $(PROTOBUF_DEP) $(BORINGSSL_REFCOUNT_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_refcount_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_refcount_test: $(PROTOBUF_DEP) $(BORINGSSL_REFCOUNT_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_refcount_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_REFCOUNT_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_refcount_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_refcount_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_REFCOUNT_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_refcount_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_refcount_test
 
 endif
 
-$(BORINGSSL_REFCOUNT_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_REFCOUNT_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_REFCOUNT_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_REFCOUNT_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_refcount_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_refcount_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_refcount_test: $(BORINGSSL_REFCOUNT_TEST_OBJS:.o=.dep)
+deps_openssl_refcount_test: $(BORINGSSL_REFCOUNT_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_REFCOUNT_TEST_OBJS:.o=.dep)
@@ -21621,15 +21621,15 @@ endif
 
 
 BORINGSSL_RSA_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_RSA_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_RSA_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_RSA_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_RSA_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_RSA_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_RSA_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_RSA_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21637,23 +21637,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_rsa_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_rsa_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_rsa_test: $(PROTOBUF_DEP) $(BORINGSSL_RSA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_rsa_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_rsa_test: $(PROTOBUF_DEP) $(BORINGSSL_RSA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_rsa_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_RSA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_rsa_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_rsa_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_RSA_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_rsa_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_rsa_test
 
 endif
 
-$(BORINGSSL_RSA_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_RSA_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_RSA_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_RSA_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_rsa_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_rsa_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_rsa_test: $(BORINGSSL_RSA_TEST_OBJS:.o=.dep)
+deps_openssl_rsa_test: $(BORINGSSL_RSA_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_RSA_TEST_OBJS:.o=.dep)
@@ -21661,15 +21661,15 @@ endif
 
 
 BORINGSSL_FILE_TEST_GTEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_FILE_TEST_GTEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_FILE_TEST_GTEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_FILE_TEST_GTEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_FILE_TEST_GTEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_FILE_TEST_GTEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_FILE_TEST_GTEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_FILE_TEST_GTEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21677,23 +21677,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_file_test_gtest: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_file_test_gtest: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_file_test_gtest: $(PROTOBUF_DEP) $(BORINGSSL_FILE_TEST_GTEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_file_test_gtest_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_file_test_gtest: $(PROTOBUF_DEP) $(BORINGSSL_FILE_TEST_GTEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_file_test_gtest_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_FILE_TEST_GTEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_file_test_gtest_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_file_test_gtest
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_FILE_TEST_GTEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_file_test_gtest_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_file_test_gtest
 
 endif
 
-$(BORINGSSL_FILE_TEST_GTEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_FILE_TEST_GTEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_FILE_TEST_GTEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_FILE_TEST_GTEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_file_test_gtest_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_file_test_gtest_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_file_test_gtest: $(BORINGSSL_FILE_TEST_GTEST_OBJS:.o=.dep)
+deps_openssl_file_test_gtest: $(BORINGSSL_FILE_TEST_GTEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_FILE_TEST_GTEST_OBJS:.o=.dep)
@@ -21701,15 +21701,15 @@ endif
 
 
 BORINGSSL_GTEST_MAIN_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_GTEST_MAIN_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_GTEST_MAIN_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_GTEST_MAIN_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_GTEST_MAIN_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_GTEST_MAIN_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_GTEST_MAIN_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_GTEST_MAIN_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21717,23 +21717,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_gtest_main: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_gtest_main: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_gtest_main: $(PROTOBUF_DEP) $(BORINGSSL_GTEST_MAIN_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_gtest_main_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_gtest_main: $(PROTOBUF_DEP) $(BORINGSSL_GTEST_MAIN_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_gtest_main_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_GTEST_MAIN_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_gtest_main_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_gtest_main
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_GTEST_MAIN_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_gtest_main_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_gtest_main
 
 endif
 
-$(BORINGSSL_GTEST_MAIN_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_GTEST_MAIN_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_GTEST_MAIN_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_GTEST_MAIN_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_gtest_main_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_gtest_main_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_gtest_main: $(BORINGSSL_GTEST_MAIN_OBJS:.o=.dep)
+deps_openssl_gtest_main: $(BORINGSSL_GTEST_MAIN_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_GTEST_MAIN_OBJS:.o=.dep)
@@ -21741,15 +21741,15 @@ endif
 
 
 BORINGSSL_THREAD_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_THREAD_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_THREAD_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_THREAD_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_THREAD_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_THREAD_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_THREAD_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_THREAD_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21757,23 +21757,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_thread_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_thread_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_thread_test: $(PROTOBUF_DEP) $(BORINGSSL_THREAD_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_thread_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_thread_test: $(PROTOBUF_DEP) $(BORINGSSL_THREAD_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_thread_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_THREAD_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_thread_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_thread_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_THREAD_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_thread_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_thread_test
 
 endif
 
-$(BORINGSSL_THREAD_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_THREAD_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_THREAD_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_THREAD_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_thread_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_thread_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_thread_test: $(BORINGSSL_THREAD_TEST_OBJS:.o=.dep)
+deps_openssl_thread_test: $(BORINGSSL_THREAD_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_THREAD_TEST_OBJS:.o=.dep)
@@ -21781,15 +21781,15 @@ endif
 
 
 BORINGSSL_X509_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_X509_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_X509_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_X509_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_X509_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_X509_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_X509_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_X509_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21797,23 +21797,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_x509_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_x509_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_x509_test: $(PROTOBUF_DEP) $(BORINGSSL_X509_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_x509_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_x509_test: $(PROTOBUF_DEP) $(BORINGSSL_X509_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_x509_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_X509_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_x509_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_x509_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_X509_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_x509_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_x509_test
 
 endif
 
-$(BORINGSSL_X509_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_X509_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_X509_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_X509_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_x509_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_x509_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_x509_test: $(BORINGSSL_X509_TEST_OBJS:.o=.dep)
+deps_openssl_x509_test: $(BORINGSSL_X509_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_X509_TEST_OBJS:.o=.dep)
@@ -21821,15 +21821,15 @@ endif
 
 
 BORINGSSL_TAB_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_TAB_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_TAB_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_TAB_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_TAB_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_TAB_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_TAB_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_TAB_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21837,23 +21837,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_tab_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_tab_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_tab_test: $(PROTOBUF_DEP) $(BORINGSSL_TAB_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_tab_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_tab_test: $(PROTOBUF_DEP) $(BORINGSSL_TAB_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_tab_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_TAB_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_tab_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_tab_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_TAB_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_tab_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_tab_test
 
 endif
 
-$(BORINGSSL_TAB_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_TAB_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_TAB_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_TAB_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_tab_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_tab_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_tab_test: $(BORINGSSL_TAB_TEST_OBJS:.o=.dep)
+deps_openssl_tab_test: $(BORINGSSL_TAB_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_TAB_TEST_OBJS:.o=.dep)
@@ -21861,15 +21861,15 @@ endif
 
 
 BORINGSSL_V3NAME_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_V3NAME_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_V3NAME_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_V3NAME_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_V3NAME_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_V3NAME_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_V3NAME_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_V3NAME_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21877,23 +21877,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_v3name_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_v3name_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_v3name_test: $(PROTOBUF_DEP) $(BORINGSSL_V3NAME_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_v3name_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_v3name_test: $(PROTOBUF_DEP) $(BORINGSSL_V3NAME_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_v3name_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_V3NAME_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_v3name_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_v3name_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_V3NAME_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_v3name_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_v3name_test
 
 endif
 
-$(BORINGSSL_V3NAME_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_V3NAME_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_V3NAME_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_V3NAME_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_v3name_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_v3name_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_v3name_test: $(BORINGSSL_V3NAME_TEST_OBJS:.o=.dep)
+deps_openssl_v3name_test: $(BORINGSSL_V3NAME_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_V3NAME_TEST_OBJS:.o=.dep)
@@ -21901,15 +21901,15 @@ endif
 
 
 BORINGSSL_SPAN_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_SPAN_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_SPAN_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_SPAN_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_SPAN_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_SPAN_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_SPAN_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_SPAN_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21917,23 +21917,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_span_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_span_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_span_test: $(PROTOBUF_DEP) $(BORINGSSL_SPAN_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_span_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_span_test: $(PROTOBUF_DEP) $(BORINGSSL_SPAN_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_span_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_SPAN_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_span_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_span_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_SPAN_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_span_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_span_test
 
 endif
 
-$(BORINGSSL_SPAN_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_SPAN_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_SPAN_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_SPAN_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_span_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_span_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_span_test: $(BORINGSSL_SPAN_TEST_OBJS:.o=.dep)
+deps_openssl_span_test: $(BORINGSSL_SPAN_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_SPAN_TEST_OBJS:.o=.dep)
@@ -21941,15 +21941,15 @@ endif
 
 
 BORINGSSL_SSL_TEST_SRC = \
-    third_party/boringssl/crypto/test/gtest_main.cc \
+    third_party/openssl/crypto/test/gtest_main.cc \
 
 BORINGSSL_SSL_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(BORINGSSL_SSL_TEST_SRC))))
 
-# boringssl needs an override to ensure that it does not include
+# openssl needs an override to ensure that it does not include
 # system openssl headers regardless of other configuration
 # we do so here with a target specific variable assignment
-$(BORINGSSL_SSL_TEST_OBJS): CFLAGS := -Ithird_party/boringssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
-$(BORINGSSL_SSL_TEST_OBJS): CXXFLAGS := -Ithird_party/boringssl/include $(CXXFLAGS)
+$(BORINGSSL_SSL_TEST_OBJS): CFLAGS := -Ithird_party/openssl/include $(CFLAGS) -Wno-sign-conversion -Wno-conversion -Wno-unused-value $(NO_W_EXTRA_SEMI)
+$(BORINGSSL_SSL_TEST_OBJS): CXXFLAGS := -Ithird_party/openssl/include $(CXXFLAGS)
 $(BORINGSSL_SSL_TEST_OBJS): CPPFLAGS += -DOPENSSL_NO_ASM -D_GNU_SOURCE
 
 
@@ -21957,23 +21957,23 @@ ifeq ($(NO_PROTOBUF),true)
 
 # You can't build the protoc plugins or protobuf-enabled targets if you don't have protobuf 3.5.0+.
 
-$(BINDIR)/$(CONFIG)/boringssl_ssl_test: protobuf_dep_error
+$(BINDIR)/$(CONFIG)/openssl_ssl_test: protobuf_dep_error
 
 else
 
-$(BINDIR)/$(CONFIG)/boringssl_ssl_test: $(PROTOBUF_DEP) $(BORINGSSL_SSL_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_ssl_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(BINDIR)/$(CONFIG)/openssl_ssl_test: $(PROTOBUF_DEP) $(BORINGSSL_SSL_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_ssl_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_SSL_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libboringssl_ssl_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/boringssl_ssl_test
+	$(Q) $(LDXX) $(LDFLAGS) $(BORINGSSL_SSL_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libopenssl_ssl_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a $(LDLIBSXX) $(LDLIBS_PROTOBUF) $(LDLIBS) $(GTEST_LIB) -o $(BINDIR)/$(CONFIG)/openssl_ssl_test
 
 endif
 
-$(BORINGSSL_SSL_TEST_OBJS): CPPFLAGS += -Ithird_party/boringssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
+$(BORINGSSL_SSL_TEST_OBJS): CPPFLAGS += -Ithird_party/openssl/include -fvisibility=hidden -DOPENSSL_NO_ASM -D_GNU_SOURCE -DWIN32_LEAN_AND_MEAN -D_HAS_EXCEPTIONS=0 -DNOMINMAX
 $(BORINGSSL_SSL_TEST_OBJS): CXXFLAGS += -fno-rtti -fno-exceptions
 $(BORINGSSL_SSL_TEST_OBJS): CFLAGS += -Wno-sign-conversion -Wno-conversion -Wno-unused-value -Wno-unknown-pragmas -Wno-implicit-function-declaration -Wno-unused-variable -Wno-sign-compare -Wno-implicit-fallthrough $(NO_W_EXTRA_SEMI)
-$(OBJDIR)/$(CONFIG)/third_party/boringssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libboringssl_ssl_test_lib.a $(LIBDIR)/$(CONFIG)/libboringssl_test_util.a $(LIBDIR)/$(CONFIG)/libboringssl.a
+$(OBJDIR)/$(CONFIG)/third_party/openssl/crypto/test/gtest_main.o:  $(LIBDIR)/$(CONFIG)/libopenssl_ssl_test_lib.a $(LIBDIR)/$(CONFIG)/libopenssl_test_util.a $(LIBDIR)/$(CONFIG)/libopenssl.a
 
-deps_boringssl_ssl_test: $(BORINGSSL_SSL_TEST_OBJS:.o=.dep)
+deps_openssl_ssl_test: $(BORINGSSL_SSL_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_DEPS),true)
 -include $(BORINGSSL_SSL_TEST_OBJS:.o=.dep)
@@ -23960,7 +23960,7 @@ src/core/tsi/alts/zero_copy_frame_protector/alts_iovec_record_protocol.cc: $(OPE
 src/core/tsi/alts/zero_copy_frame_protector/alts_zero_copy_grpc_protector.cc: $(OPENSSL_DEP)
 src/core/tsi/alts_transport_security.cc: $(OPENSSL_DEP)
 src/core/tsi/fake_transport_security.cc: $(OPENSSL_DEP)
-src/core/tsi/ssl/session_cache/ssl_session_boringssl.cc: $(OPENSSL_DEP)
+src/core/tsi/ssl/session_cache/ssl_session_openssl.cc: $(OPENSSL_DEP)
 src/core/tsi/ssl/session_cache/ssl_session_cache.cc: $(OPENSSL_DEP)
 src/core/tsi/ssl/session_cache/ssl_session_openssl.cc: $(OPENSSL_DEP)
 src/core/tsi/ssl_transport_security.cc: $(OPENSSL_DEP)
